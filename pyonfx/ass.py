@@ -156,11 +156,16 @@ class Ass:
                     # Tags can be some text or empty string
                     text_chunks = self._search_text_chunks(line)
 
-                    # Adding syls
-                    line = self._add_data_syls(line, font, font_metrics, text_chunks, space_width, style_spacing)
+                    # # Adding syls
+                    # line = self._add_data_syls(line, font, font_metrics, text_chunks, space_width, style_spacing)
 
-                    # Getting chars
-                    line = self._add_data_chars(line, font, font_metrics, style_spacing)
+                    # # Getting chars
+                    # line = self._add_data_chars(line, font, font_metrics, style_spacing)
+                    for word in line.words:
+                        word = self._add_data_syls2(word, font, font_metrics, text_chunks, space_width, style_spacing)
+                        for syl in word.syls:
+                            syl = self._add_data_chars2(syl, font, font_metrics, style_spacing)
+
 
             # Add durations between dialogs
             fps = float(self.fps)
@@ -488,6 +493,282 @@ class Ass:
                 tag = next_tag
 
         return text_chunks
+
+    def _add_data_syls2(self, word: Word, font: Font, font_metrics: Tuple[float, float, float, float],
+                        text_chunks: List['_TextChunk'], space_width: float, style_spacing: float) -> Word:
+        # Adding syls
+        si = 0
+        last_time = 0.0
+        inline_fx = ""
+        syl_tags_pattern = re.compile(r"(.*?)\\[kK][of]?(\d+)(.*)")
+
+        word.syls = PList()
+        for tc in text_chunks:
+            # If we don't have at least one \k tag, everything is invalid
+            if not syl_tags_pattern.match(tc.tags):
+                # word.syls.clear()
+                syl = Syllable()
+                syl.__dict__ |= word.__dict__
+                word.syls.append(syl)
+                break
+
+            posttags = tc.tags
+            syls_in_text_chunk: List[Syllable] = []
+            while True:
+                # Are there \k in posttags?
+                tags_syl = syl_tags_pattern.match(posttags)
+
+                if not tags_syl:
+                    # Append all the temporary syls, except last one
+                    for syl in syls_in_text_chunk[:-1]:
+                        curr_inline_fx = re.search(r"\\\-([^\\]+)", syl.tags)
+                        if curr_inline_fx:
+                            inline_fx = curr_inline_fx[1]
+                        syl.inline_fx = inline_fx
+
+                        # Hidden syls are treated like empty syls
+                        syl.prespace, syl.text, syl.postspace = 0, "", 0
+
+                        syl.width, syl.height = font.get_text_extents("")
+                        syl.ascent, syl.descent, syl.internal_leading, syl.external_leading = font_metrics
+
+                        word.syls.append(syl)
+
+                    # Append last syl
+                    syl = syls_in_text_chunk[-1]
+                    syl.tags += posttags
+
+                    curr_inline_fx = re.search(r"\\\-([^\\]+)", syl.tags)
+                    if curr_inline_fx:
+                        inline_fx = curr_inline_fx[1]
+                    syl.inline_fx = inline_fx
+
+                    if tc.text.isspace():
+                        syl.prespace, syl.text, syl.postspace = 0, tc.text, 0
+                    else:
+                        if pstxtps := re.match(r"(\s*)(.*?)(\s*)$", tc.text):
+                            prespace, syl.text, postspace = pstxtps.groups()
+                            syl.prespace, syl.postspace = len(prespace), len(postspace)
+
+                    syl.width, syl.height = font.get_text_extents(syl.text)
+                    syl.ascent, syl.descent, syl.internal_leading, syl.external_leading = font_metrics
+
+                    word.syls.append(syl)
+                    break
+
+                pretags, kdur, posttags = tags_syl.groups()
+
+                # Create a Syllable object
+                syl = Syllable()
+
+                syl.start_time = last_time
+                # kdur is in centiseconds
+                # Converting in seconds...
+                syl.end_time = last_time + int(kdur) / 100
+                syl.duration = int(kdur) / 100
+
+                syl.style = word.style
+                syl.tags = pretags
+
+                syl.i = si
+                if tc.word_i is not None:
+                    syl.word_i = tc.word_i
+
+                syls_in_text_chunk.append(syl)
+
+                # Update working variable
+                si += 1
+                last_time = syl.end_time
+
+        # Calculate syllables positions with all syllables data already available
+        if word.syls and hasattr(self.meta, 'play_res_x'):
+            if word.style.an_is_top() or word.style.an_is_bottom() or not self.vertical_kanji:
+                cur_x = word.left
+                for syl in word.syls:
+                    cur_x += syl.prespace * (space_width + style_spacing)
+
+                    # Horizontal position
+                    syl.left = cur_x
+                    syl.center = syl.left + syl.width / 2
+                    syl.right = syl.left + syl.width
+
+                    if word.style.an_is_left():
+                        syl.x = syl.left
+                    elif word.style.an_is_center():
+                        syl.x = syl.center
+                    else:
+                        syl.x = syl.right
+
+                    cur_x += syl.width + syl.postspace * (space_width + style_spacing) + style_spacing
+
+                    # Vertical position
+                    syl.top = word.top
+                    syl.middle = word.middle
+                    syl.bottom = word.bottom
+                    syl.y = word.y
+
+            else:  # Kanji vertical position
+                max_width, sum_height = 0.0, 0.0
+                for syl in word.syls:
+                    max_width = max(max_width, syl.width)
+                    sum_height += syl.height
+
+                cur_y = self.meta.play_res_y / 2 - sum_height / 2
+
+                for syl in word.syls:
+                    # Horizontal position
+                    x_fix = (max_width - syl.width) / 2
+                    if word.style.alignment == 4:
+                        syl.left = word.left + x_fix
+                        syl.center = syl.left + syl.width / 2
+                        syl.right = syl.left + syl.width
+                        syl.x = syl.left
+                    elif word.style.alignment == 5:
+                        syl.left = word.center - syl.width / 2
+                        syl.center = syl.left + syl.width / 2
+                        syl.right = syl.left + syl.width
+                        syl.x = syl.center
+                    else:
+                        syl.left = word.right - syl.width - x_fix
+                        syl.center = syl.left + syl.width / 2
+                        syl.right = syl.left + syl.width
+                        syl.x = syl.right
+
+                    # Vertical position
+                    syl.top = cur_y
+                    syl.middle = syl.top + syl.height / 2
+                    syl.bottom = syl.top + syl.height
+                    syl.y = syl.middle
+                    cur_y += syl.height
+
+        return word
+
+    def _add_data_chars2(self, el: Union[Syllable, Word], font: Font, font_metrics: Tuple[float, float, float, float],
+                         style_spacing: float) -> Syllable:
+        # Adding chars
+        el.chars = PList()
+
+        # If we have syls in line, we prefert to work with them to provide more informations
+        # words_or_syls: Union[PList[Syllable], PList[Word]] = line.syls if line.syls else line.words
+
+        # Getting chars
+        char_index = 0
+        el_text = "{}{}{}".format(" " * el.prespace, el.text, " " * el.postspace)
+        for ci, char_text in enumerate(el_text):
+            char = Char()
+            char.i = char_index
+            char_index += 1
+
+            # # If we're working with syls, we can add some indexes
+            # if line.syls:
+            #     # el = cast(Syllable, el)
+            #     char.word_i = el.word_i  # type: ignore
+            #     char.syl_i = el.i
+            #     char.syl_char_i = ci
+            # else:
+            #     el = cast(Word, el)
+            #     char.word_i = el.i
+            try:
+                char.word_i = el.word_i
+            except AttributeError:
+                char.word_i = el.i
+            char.syl_i = el.i
+            char.syl_char_i = ci
+
+            # Adding last fields based on the existance of syls or not
+            char.start_time = el.start_time
+            char.end_time = el.end_time
+            char.duration = el.duration
+
+            char.style = el.style
+            char.text = char_text
+
+            char.width, char.height = font.get_text_extents(char.text)
+            char.ascent, char.descent, char.internal_leading, char.external_leading = font_metrics
+
+            el.chars.append(char)
+
+        # Calculate character positions with all characters data already available
+        try:
+            play_res_x = self.meta.play_res_x
+            play_res_y = self.meta.play_res_y
+        except AttributeError:
+            pass
+        else:
+            if el.style.an_is_top() or el.style.an_is_bottom() or not self.vertical_kanji:
+                cur_x = el.left
+                for char in el.chars:
+                    # Horizontal position
+                    char.left = cur_x
+                    char.center = char.left + char.width / 2
+                    char.right = char.left + char.width
+
+                    if el.style.an_is_left():
+                        char.x = char.left
+                    if el.style.an_is_center():
+                        char.x = char.center
+                    else:
+                        char.x = char.right
+
+                    cur_x += char.width + style_spacing
+
+                    # Vertical position
+                    char.top = el.top
+                    char.middle = el.middle
+                    char.bottom = el.bottom
+                    char.y = el.y
+            else:
+                max_width, sum_height = 0.0, 0.0
+                for char in el.chars:
+                    max_width = max(max_width, char.width)
+                    sum_height = sum_height + char.height
+
+                cur_y = x_fix = play_res_y / 2 - sum_height / 2
+
+                # Fixing line positions
+                el.top = cur_y
+                el.middle = play_res_y / 2
+                el.bottom = el.top + sum_height
+                el.width = max_width
+                el.height = sum_height
+                if el.style.alignment == 4:
+                    el.center = el.left + max_width / 2
+                    el.right = el.left + max_width
+                elif el.style.alignment == 5:
+                    el.left = el.center - max_width / 2
+                    el.right = el.left + max_width
+                else:
+                    el.left = el.right - max_width
+                    el.center = el.left + max_width / 2
+
+                for char in el.chars:
+                    # Horizontal position
+                    x_fix = (max_width - char.width) / 2
+                    if el.style.alignment == 4:
+                        char.left = el.left + x_fix
+                        char.center = char.left + char.width / 2
+                        char.right = char.left + char.width
+                        char.x = char.left
+                    elif el.style.alignment == 5:
+                        char.left = play_res_x / 2 - char.width / 2
+                        char.center = char.left + char.width / 2
+                        char.right = char.left + char.width
+                        char.x = char.center
+                    else:
+                        char.left = el.right - char.width - x_fix
+                        char.center = char.left + char.width / 2
+                        char.right = char.left + char.width
+                        char.x = char.right
+
+                    # Vertical position
+                    char.top = cur_y
+                    char.middle = char.top + char.height / 2
+                    char.bottom = char.top + char.height
+                    char.y = char.middle
+                    cur_y += char.height
+
+        return el
+
 
     def _add_data_syls(self, line: Line, font: Font, font_metrics: Tuple[float, float, float, float],
                        text_chunks: List['_TextChunk'], space_width: float, style_spacing: float) -> Line:

@@ -130,6 +130,35 @@ class PList(MutableSequence[AssTextT]):
         else:
             return PList(a for a in self if _strip_check(a))
 
+    def adjust_indices(self) -> None:
+        if not all(isinstance(text, Line) for text in self):
+            raise TypeError
+
+        for line_i, line in enumerate(self):
+            line = cast(Line, line)
+            line.i = line_i
+            char_index = 0
+            syl_index = 0
+            # word_index = 0
+
+            for word_i, word in enumerate(line.words):
+                word.i = word_i
+
+                for syl in word.syls:
+                    syl.i = syl_index
+                    syl_index += 1
+
+                    syl.word_i = word_i
+
+                    for syl_char_i, char in enumerate(syl.chars):
+                        char.i = char_index
+                        char_index += 1
+
+                        char.word_i = word_i
+                        char.syl_i = syl_index
+                        char.syl_char_i = syl_char_i
+
+
 
 class DataCore(ABC):
     """Abstract DataCore object"""
@@ -493,10 +522,25 @@ class Line(AssText):
     """Line raw text"""
     words: PList[Word]
     """List containing objects :class:`Word` in this line (*)"""
-    syls: PList[Syllable]
-    """List containing objects :class:`Syllable` in this line (if available) (*)"""
-    chars: PList[Char]
-    """List containing objects :class:`Char` in this line (*)"""
+    # syls: PList[Syllable]
+    # """List containing objects :class:`Syllable` in this line (if available) (*)"""
+    # chars: PList[Char]
+    # """List containing objects :class:`Char` in this line (*)"""
+
+    @property
+    def syls(self) -> PList[Syllable]:
+        syls: PList[Syllable] = PList()
+        for word in self.words:
+            syls.extend(word.syls)
+        return syls
+
+    @property
+    def chars(self) -> PList[Char]:
+        chars: PList[Char] = PList()
+        for word in self.words:
+            for syl in word.syls:
+                chars.extend(syl.chars)
+        return chars
 
     def compose_ass_line(self) -> str:
         """Make an ASS line suitable for writing into ASS file"""
@@ -523,6 +567,8 @@ class Word(AssText):
     """Word free space before text"""
     postspace: int
     """Word free space after text"""
+    syls: PList[Syllable]
+    """List containing objects :class:`Syllable` in this line (if available) (*)"""
 
 
 class WordElement(Word, ABC):
@@ -542,6 +588,8 @@ class Syllable(WordElement):
     """
     tags: str
     """All the remaining tags before syl text apart \\k ones"""
+    chars: PList[Char]
+    """List containing objects :class:`Char` in this line (*)"""
 
 
 class Char(WordElement):
