@@ -3,11 +3,13 @@ from __future__ import annotations
 
 import sys
 from abc import ABC, ABCMeta, abstractmethod
+from collections import deque
 from functools import reduce, wraps
+from itertools import islice
 from os import PathLike
 from typing import (
-    Any, Callable, Collection, Dict, Generic, Iterable, Iterator, Reversible, Sequence, Tuple,
-    TypeVar, Union, cast, get_args, get_origin, overload
+    Any, Callable, Collection, Deque, Dict, Generic, Iterable, Iterator, Reversible, Sequence,
+    SupportsIndex, Tuple, TypeVar, Union, cast, get_args, get_origin, overload
 )
 
 from numpy.typing import NDArray
@@ -182,3 +184,63 @@ class NamedMutableSequence(Sequence[T_co], ABC, ignore_slots=True, metaclass=Nam
 
     def __len__(self) -> int:
         return self.__slots__.__len__()
+
+
+class SliceableDeque(Deque[T]):
+
+    def _resolve_slice(self, s: slice) -> slice:
+        start = 0 if s.start is None else s.start if s.start >= 0 else len(self) + s.start
+        stop = len(self) if s.stop is None else s.stop if s.stop >= 0 else len(self) + s.stop
+        return slice(start, stop, s.step)
+
+    @overload
+    def __getitem__(self, index: SupportsIndex) -> T:
+        ...
+
+    @overload
+    def __getitem__(self, index: slice) -> Deque[T]:
+        ...
+
+    def __getitem__(self, index: SupportsIndex | slice) -> T | Deque[T]:
+        if isinstance(index, SupportsIndex):
+            return super().__getitem__(index)
+        index = self._resolve_slice(index)
+        self.rotate(- index.start)
+        sliced = islice(self.copy(), 0, index.stop - index.start, index.step)
+        self.rotate(index.start)
+        return deque(sliced)
+
+    def __setitem__(self, index: int, value: T) -> None:
+        return super().__setitem__(index, value)
+        try:
+            return super().__setitem__(index, value)
+        except ValueError:
+            index = self._resolve_slice(index)
+            for i, v in zip(range(index.start, index.stop, index.step), value):
+                self.rotate(- i)
+                self.popleft()
+                self.appendleft(v)
+                self.rotate(i)
+        if isinstance(index, SupportsIndex) and not isinstance(value, Iterable):
+            return super().__setitem__(index, value)
+        elif isinstance(index, slice) and isinstance(value, Iterable):
+            index = self._resolve_slice(index)
+            for i, v in zip(range(index.start, index.stop, index.step), value):
+                self.rotate(- i)
+                self.popleft()
+                self.appendleft(v)
+                self.rotate(i)
+        elif isinstance(index, SupportsIndex) and not isinstance(value, Iterable):
+            raise TypeError(f'{self.__class__.__name__}: can only assign a value!')
+        elif isinstance(index, slice) and isinstance(value, Iterable):
+            raise TypeError(f'{self.__class__.__name__}: can only assign an iterable!')
+        else:
+            raise NotImplementedError(f'{self.__class__.__name__}: not supported')
+
+    def __delitem__(self, index: int | slice) -> None:
+        if isinstance(index, int):
+            return super().__delitem__(index)
+        for i, idx in enumerate(range(index.start, index.stop, index.step)):
+            self.rotate(- idx + i)
+            self.popleft()
+            self.rotate(idx - i)

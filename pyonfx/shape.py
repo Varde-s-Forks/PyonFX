@@ -42,7 +42,7 @@ from skimage.transform import rescale as skimage_rescale  # type: ignore
 from .colourspace import ASSColor, Opacity
 from .geometry import CartesianAxis, Geometry, Point, PointCartesian2D, PointsView, VectorCartesian2D, VectorCartesian3D
 from .misc import chunk, frange
-from .types import Alignment, View
+from .types import Alignment, SliceableDeque, View
 
 
 class Pixel(NamedTuple):
@@ -297,7 +297,7 @@ class DrawingCommand(_AbstractDrawingCommand):
 
 class _AbstractShape(MutableSequence[DrawingCommand], ABC):
     __slots__ = ('_commands', )
-    _commands: List[DrawingCommand]
+    _commands: SliceableDeque[DrawingCommand]
 
     @abstractmethod
     def __init__(self) -> None:
@@ -328,6 +328,7 @@ class _AbstractShape(MutableSequence[DrawingCommand], ABC):
         if isinstance(index, SupportsIndex) and isinstance(value, DrawingCommand):
             self._commands[index] = value
         elif isinstance(index, slice) and not isinstance(value, DrawingCommand):
+            raise NotImplementedError
             self._commands[index] = value
         elif isinstance(index, SupportsIndex) and isinstance(value, DrawingCommand):
             raise TypeError(f'{self.__class__.__name__}: can only assign a value!')
@@ -336,7 +337,7 @@ class _AbstractShape(MutableSequence[DrawingCommand], ABC):
         else:
             raise NotImplementedError(f'{self.__class__.__name__}: not supported')
 
-    def __delitem__(self, index: SupportsIndex | slice) -> None:
+    def __delitem__(self, index: int | slice) -> None:
         del self._commands[index]
 
     def __len__(self) -> int:
@@ -401,10 +402,10 @@ class Shape(_AbstractShape):
         :param cmds:        DrawingCommand objects
         :param copy_cmds:   If False and ``cmds`` is a list, don't make a copy of it
         """
-        if not copy_cmds and isinstance(cmds, list):
+        if not copy_cmds and isinstance(cmds, SliceableDeque):
             self._commands = cmds
         else:
-            self._commands = list(cmds)
+            self._commands = SliceableDeque(cmds)
         super().__init__()
 
     def to_str(self, round_digits: int = 3, optimise: bool = True) -> str:
@@ -452,10 +453,10 @@ class Shape(_AbstractShape):
         :param func:            A function with two parameters representing the x and y coordinates of each point.
                                 It will define how each coordinate will be changed.
         """
-        self._commands = [
+        self._commands = SliceableDeque(
             DrawingCommand(cmd.prop, *[func(p) for p in cmd._coordinates], unsafe=True)
             for cmd in self
-        ]
+        )
 
     def move(self, _x: float = 0., _y: float = 0., /) -> None:
         """
@@ -604,7 +605,7 @@ class Shape(_AbstractShape):
 
         m, n, l = DP.MOVE, DP.MOVE_NC, DP.LINE
         b = DP.BÉZIER
-        ncmds: List[DrawingCommand] = []
+        ncmds: SliceableDeque[DrawingCommand] = SliceableDeque()
 
         # Work with the commands reversed
         self.reverse()
@@ -640,7 +641,7 @@ class Shape(_AbstractShape):
         # Aliases
         DP = DrawingProp
         m, n, l = DP.MOVE, DP.MOVE_NC, DP.LINE
-        ncmds: List[DrawingCommand] = []
+        ncmds: SliceableDeque[DrawingCommand] = SliceableDeque()
 
         self.flatten(tolerance)
 
@@ -683,12 +684,13 @@ class Shape(_AbstractShape):
 
         for shape in shapes:
             shape.unclose()
-            ncmds: List[DrawingCommand] = []
+            ncmds: SliceableDeque[DrawingCommand] = SliceableDeque()
 
-            pres = list(shape)
-            pres.insert(0, pres.pop(-1))
-            posts = list(shape)
-            posts.append(posts.pop(0))
+            pres = SliceableDeque(shape)
+            # pres.insert(0, pres.pop(-1))
+            pres.rotate(1)
+            posts = SliceableDeque(shape)
+            posts.rotate(-1)
 
             for pre, curr, post in zip(pres, shape, posts):
                 if curr.prop in {m, n, l}:
@@ -702,7 +704,7 @@ class Shape(_AbstractShape):
                 else:
                     ncmds.append(curr)
             shape._commands = ncmds
-        self._commands = list(flatten(shapes))
+        self._commands = SliceableDeque(flatten(shapes))
 
     @classmethod
     def ring(cls, out_rad: float, in_rad: float, c_xy: Tuple[float, float] = (0., 0.), /) -> Shape:
@@ -1009,7 +1011,7 @@ class Shape(_AbstractShape):
         DC = DrawingCommand
         m, l, b, s = DrawingProp.MOVE, DrawingProp.LINE, DrawingProp.BÉZIER, DrawingProp.BSPLINE
 
-        cmds: List[DrawingCommand] = []
+        cmds: SliceableDeque[DrawingCommand] = SliceableDeque()
         coordinates: List[PointCartesian2D] = []
 
         cmds.append(DC(m, (0, -outer_size)))
@@ -1046,7 +1048,7 @@ class Shape(_AbstractShape):
             raise ValueError(f'{cls.__name__}: a shape must have a "m" at the beginning!')
 
         DC, DP = DrawingCommand, DrawingProp
-        cmds: List[DrawingCommand] = []
+        cmds: SliceableDeque[DrawingCommand] = SliceableDeque()
         draws = cast(List[str], re.findall(r'[mnlpbsc][^mnlpbsc]+', drawing_cmds))
 
         # if sys.version_info <= (3, 10):
@@ -1197,13 +1199,14 @@ class Shape(_AbstractShape):
         # -- Create stroke shape out of figures
         DC, DP = DrawingCommand, DrawingProp
         m, l = DP.MOVE, DP.LINE
-        stroke_cmds: List[DrawingCommand] = []
+        stroke_cmds: SliceableDeque[DrawingCommand] = SliceableDeque()
 
         for shape in shapes:
             shape.unclose()
             # Outer
-            rcmds = [shape._commands[0]]
-            rcmds.extend(reversed(shape._commands[1:]))
+            rcmds = SliceableDeque(shape._commands)
+            rcmds.rotate(-1)
+            rcmds.reverse()
             outline = _stroke_lines(rcmds, width, xscale, yscale, mode, miter_limit, max_circumference)
             stroke_cmds.append(DC(m, outline.pop(0), unsafe=True))
             stroke_cmds.extend(DC(l, coordinate, unsafe=True) for coordinate in outline)
