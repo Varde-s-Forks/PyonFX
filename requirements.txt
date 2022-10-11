@@ -1,4 +1,4 @@
-loguru==0.5.3
+loguru==0.6.0
 more_itertools==8.14.0
 numpy==1.22.0
 opencv_python==4.5.5.62
