@@ -5,6 +5,6 @@ opencv_python==4.5.5.62
 pycairo==1.20.1; sys_platform == "linux" or sys_platform == "darwin"
 PyGObject==3.42.2; sys_platform == "linux" or sys_platform == "darwin"
 pywin32==303; sys_platform == "win32"
-scikit_image==0.19.1
+scikit_image==0.19.3
 typing_extensions==4.4.0
 # win32gui; sys_platform == "win32"
