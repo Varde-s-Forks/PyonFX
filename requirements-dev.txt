@@ -2,7 +2,7 @@ flake8~=5.0.4
 mypy~=0.991
 loguru-mypy~=0.0.4
 pytest~=7.2.0
-pytest_check~=1.0.10
+pytest_check~=1.2.0
 sphinx-panels~=0.6.0
 sphinx-rtd-theme~=1.1.1
 pywin32-stubs~=1.0.7; sys_platform == "win32"
