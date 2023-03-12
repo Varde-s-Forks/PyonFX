@@ -1,7 +1,7 @@
 loguru~=0.6.0
 more_itertools~=9.0.0
 numpy~=1.24.2
-opencv_python~=4.6.0.66
+opencv_python~=4.7.0.72
 pycairo~=1.23.0; sys_platform == "linux" or sys_platform == "darwin"
 PyGObject~=3.42.2; sys_platform == "linux" or sys_platform == "darwin"
 pywin32==305; sys_platform == "win32"
