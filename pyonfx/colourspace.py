@@ -250,7 +250,7 @@ class _BaseRGB(ColourSpace[Nb], ABC, empty_slots=True):
             self.r, self.g, self.b = _x
 
     def to_rgb(self, rgb_type: Type[_RGB_T], /) -> _RGB_T:
-        if type(self) == rgb_type:
+        if type(self) is rgb_type:
             return self.__copy__()  # type: ignore
 
         newpeaks = rgb_type.peaks

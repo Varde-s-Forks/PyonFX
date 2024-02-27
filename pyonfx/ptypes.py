@@ -205,7 +205,7 @@ class NamedMutableSequence(AutoSlots, Sequence[T_co], Generic[T_co], ABC, empty_
     def __eq__(self, __o: object) -> bool:
         if not isinstance(__o, self.__class__):
             return NotImplemented
-        return type(self) == type(__o) and tuple(self) == tuple(__o)
+        return type(self) is type(__o) and tuple(self) is tuple(__o)
 
     @overload
     def __getitem__(self, index: int) -> T_co:
