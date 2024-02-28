@@ -1200,12 +1200,12 @@ class Shape(_AbstractShape):
         # Build an image
         _, pb1 = wshape.bounding
         width, height = ceil(pb1.x), ceil(pb1.y)
-        image = np.zeros((height, width), np.uint8)  # type: ignore[var-annotated]
+        image = np.zeros((height, width), np.uint8)
 
         # Extract coordinates
         xs, ys = unzip(c.to_2d() for cv in wshape._commands for c in cv)
         # Build rows and columns from coordinates
-        rows, columns = np.fromiter(ys, np.float32), np.fromiter(xs, np.float32)  # type: ignore[var-annotated]
+        rows, columns = np.fromiter(ys, np.float32), np.fromiter(xs, np.float32)
         # Get polygons coordinates
         rr, cc = skimage_polygon(rows, columns, shape=(height, width))
         # Fill the image from the polygon coordinates

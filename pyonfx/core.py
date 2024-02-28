@@ -35,7 +35,7 @@ from collections import UserList, defaultdict
 from functools import lru_cache
 from pprint import pformat
 from typing import (
-    TYPE_CHECKING, Any, DefaultDict, Dict, Iterable, Iterator, List, Literal, Optional, Tuple, Type,
+    Any, DefaultDict, Dict, Iterable, Iterator, List, Literal, Optional, Tuple, Type,
     TypeVar, Union, overload
 )
 
@@ -1563,22 +1563,7 @@ class Char(_WordElement, slots_ex=True):
     of "users will have syl_char_i=2)"""
 
 
-if TYPE_CHECKING:
-    BaseUserList = UserList
-else:
-    if sys.version_info < (3, 9):
-        class _UserList(UserList):
-            def __getitem__(self, item: Any) -> Any:
-                if isinstance(item, (slice, int)):
-                    return super().__getitem__(item)
-                return self.__class__
-
-        BaseUserList = _UserList()
-    else:
-        BaseUserList = UserList
-
-
-class PList(BaseUserList[_AssTextT]):
+class PList(UserList[_AssTextT]):
     """PyonFX list"""
 
     def __init__(self, __iterable: Iterable[_AssTextT] | None = None, /) -> None:

@@ -28,10 +28,7 @@ Nb = TypeVar('Nb', bound=Union[float, int])  # Number
 Tup3 = Tuple[Nb, Nb, Nb]
 Tup4 = Tuple[Nb, Nb, Nb, Nb]
 Tup3Str = Tuple[str, str, str]
-if sys.version_info >= (3, 9):
-    AnyPath = Union[PathLike[str], str]
-else:
-    AnyPath = Union[PathLike, str]
+AnyPath = Union[PathLike[str], str]
 SomeArrayLike = Union[Sequence[float], NDArray[Any]]
 
 
