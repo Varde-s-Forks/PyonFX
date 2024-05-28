@@ -894,6 +894,15 @@ class _AssText(_PositionedText, ABC, empty_slots=True):
         """
         return self.shallow_copy()
 
+    def shift_time(self, time: float | Time) -> None:
+        """
+        Convenience function to shift start end times of current AssText object
+
+        :param time:        Float of Time value to shift the current AssText object to
+        """
+        self.start_time += time
+        self.end_time += time
+
     def to_shape(self, fscx: Optional[float] = None, fscy: Optional[float] = None, copy: bool = True) -> Shape:
         """
         Convert current AssText object to shape based on its Style attribute.
