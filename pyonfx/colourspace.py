@@ -39,6 +39,11 @@ class ColourSpace(NamedMutableSequence[TCV_co], ABC, empty_slots=True):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__()
 
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, ColourSpace):
+            return super().__eq__(value)
+        return self._asdict() == value._asdict()
+
     def __copy__(self: _ColourSpaceT) -> _ColourSpaceT:
         vals = tuple(getattr(self, x) for x in self.__slots__ if not x.startswith('_'))
         return self.__class__(vals[0] if len(vals) <= 1 else vals)

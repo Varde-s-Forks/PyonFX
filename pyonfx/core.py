@@ -30,13 +30,14 @@ import re
 import subprocess
 import sys
 import time
+
 from abc import ABC
 from collections import UserList, defaultdict
 from functools import lru_cache
 from pprint import pformat
 from typing import (
-    Any, DefaultDict, Dict, Iterable, Iterator, List, Literal, Optional, Tuple, Type,
-    TypeVar, Union, overload
+    Any, DefaultDict, Dict, Iterable, Iterator, List, Literal, Optional, Tuple, Type, TypeVar,
+    Union, overload
 )
 
 from more_itertools import zip_offset
@@ -46,9 +47,12 @@ from ._metadata import __version__
 from .colourspace import ASSColor, Opacity
 from .exception import LineNotFoundWarning, MatchNotFoundError
 from .font import Font, get_font
-from .shape import Pixel, Shape
 from .ptime import Time
-from .ptypes import AnyPath, AssBool, AutoSlots, BorderStyleBool, CustomBool, NamedMutableSequence, OrderedSet, StyleBool
+from .ptypes import (
+    Alignment, AnyPath, AssBool, AutoSlots, BorderStyleBool, CustomBool, NamedMutableSequence,
+    OrderedSet, StyleBool
+)
+from .shape import Pixel, Shape
 
 _AssTextT = TypeVar('_AssTextT', bound='_AssText')
 _MetaDataT = TypeVar('_MetaDataT', bound='_MetaData')
@@ -394,6 +398,14 @@ class AssVoid(Ass):
 
 
 class _DataCore(AutoSlots, Iterable[Tuple[str, Any]], ABC, empty_slots=True):
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, _DataCore):
+            return super().__eq__(value)
+        return self._asdict() == value._asdict()
+
+    def __hash__(self) -> int:
+        return super().__hash__()
+
     def __iter__(self) -> Iterator[Tuple[str, Any]]:
         for name in self.__all_slots__:
             try:
