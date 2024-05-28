@@ -928,7 +928,7 @@ class _AssText(_PositionedText, ABC, empty_slots=True):
 
         return shape
 
-    def to_clip(self, an: int = 7, fscx: Optional[float] = None, fscy: Optional[float] = None, copy: bool = True) -> Shape:
+    def to_clip(self, an: Alignment = 7, fscx: Optional[float] = None, fscy: Optional[float] = None, copy: bool = True) -> Shape:
         """
         Convert current AssText object to shape based on its Style attribute, suitable for \\clip tag
 
