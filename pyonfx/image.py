@@ -5,8 +5,6 @@ __all__ = ['Image']
 from pathlib import Path
 from typing import List, NoReturn
 
-import cv2  # type: ignore
-
 from ._logging import logger
 from .colourspace import ASSColor, Opacity
 from .geometry import PointCartesian2D
@@ -35,6 +33,7 @@ class Image:
 
         :return:            List of Pixel
         """
+        import cv2
         img_bgr = cv2.imread(str(self.path))
         rows, columns, channels = img_bgr.shape
         return [

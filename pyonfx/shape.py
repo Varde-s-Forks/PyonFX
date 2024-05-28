@@ -29,7 +29,7 @@ import re
 from abc import ABC, abstractmethod
 from collections import deque
 from copy import deepcopy
-from enum import Enum, auto
+from enum import Enum, StrEnum, auto
 from math import atan, ceil, cos, degrees, isfinite, radians, sqrt
 from typing import (
     Any, Callable, Deque, Dict, Iterable, List, MutableSequence, NamedTuple, Optional, Sequence,
@@ -38,8 +38,6 @@ from typing import (
 
 import numpy as np
 from more_itertools import flatten, sliced, unzip, zip_offset
-from skimage.draw import polygon as skimage_polygon  # type: ignore
-from skimage.transform import rescale as skimage_rescale  # type: ignore
 
 from ._logging import logger
 from .colourspace import ASSColor, Opacity
@@ -84,7 +82,7 @@ class OutlineMode(Enum):
     ROUND = auto()
 
 
-class DrawingProp(Enum):
+class DrawingProp(StrEnum):
     """
     Enum storing the possible properties of a drawing command.
     Documentation about them is from the Aegisub official one.
@@ -242,7 +240,6 @@ class DrawingCommand(_AbstractDrawingCommand):
         self._coordinates = tuple(c if isinstance(c, Point) else PointCartesian2D(*c) for c in coordinates)
         if not unsafe:
             self.check_integrity()
-        super().__init__()
 
     @logger.catch
     def check_integrity(self) -> None:
@@ -407,7 +404,6 @@ class Shape(_AbstractShape):
             self._commands = cmds
         else:
             self._commands = list(cmds)
-        super().__init__()
 
     @logger.catch
     def to_str(self, round_digits: int = 3, optimise: bool = True) -> str:
@@ -1180,6 +1176,9 @@ class Shape(_AbstractShape):
         :param anti_aliasing:       Downscale with anti_aliasing or not, default to True
         :return:                    List of Pixel
         """
+        from skimage.draw import polygon as skimage_polygon  # type: ignore
+        from skimage.transform import rescale as skimage_rescale  # type: ignore
+
         ss = supersampling
         # Copy current shape object
         wshape = deepcopy(self)
