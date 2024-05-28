@@ -569,6 +569,7 @@ class ProjectGarbage(_MetaData):
     video__zoom__percent: float
     video__position: int
     active__line: int
+    keyframes__file: str
 
     @classmethod
     def get_default(cls) -> ProjectGarbage:
