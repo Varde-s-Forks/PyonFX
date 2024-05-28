@@ -1,15 +1,14 @@
 """Internal types module"""
 from __future__ import annotations
 
-import sys
 from abc import ABC, ABCMeta, abstractmethod
 from collections import OrderedDict
 from functools import _lru_cache_wrapper, wraps
 from os import PathLike
 from types import FunctionType, MemberDescriptorType, MethodType
 from typing import (
-    AbstractSet, Any, Callable, Collection, Dict, Generic, Iterable, Iterator,
-    Mapping, MutableSet, Reversible, Sequence, Tuple, TypeVar, Union, cast, final, get_args,
+    AbstractSet, Any, Callable, Collection, Dict, Generic, Iterable, Iterator, Literal,
+    MutableMapping, MutableSet, Reversible, Sequence, Tuple, TypeVar, Union, cast, final, get_args,
     get_origin, overload
 )
 
@@ -44,7 +43,7 @@ class ValueRangeInclExcl(CheckAnnotated[float]):
         self.y = y
 
     def check(self, val: float | Iterable[float], param_name: str) -> None:
-        val = [val] if isinstance(val, float) else val
+        val = [val] if isinstance(val, (int, float)) else val
         for v in val:
             if not self.x < v <= self.y:
                 raise ValueError(f'{param_name} "{v}" is not in the range ({self.x}, {self.y})')
@@ -56,7 +55,7 @@ class ValueRangeIncInc(CheckAnnotated[float]):
         self.y = y
 
     def check(self, val: float | Iterable[float], param_name: str) -> None:
-        val = [val] if isinstance(val, float) else val
+        val = [val] if isinstance(val, (int, float)) else val
         for v in val:
             if not self.x < v < self.y:
                 raise ValueError(f'{param_name} "{v}" is not in the range ({self.x}, {self.y})')
@@ -66,7 +65,7 @@ Nb8bit = Annotated[int, ValueRangeInclExcl(0, 256)]
 Nb16bit = Annotated[int, ValueRangeInclExcl(0, 65536)]
 NbFloat = Annotated[float, ValueRangeIncInc(0.0, 1.0)]
 Pct = Annotated[float, ValueRangeIncInc(0.0, 1.0)]
-Alignment = Annotated[int, ValueRangeIncInc(0, 9)]
+Alignment = Literal[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 
 def check_annotations(func: F, /) -> F:
@@ -120,7 +119,7 @@ class View(Reversible[T], Collection[T]):
 
 class AutoSlotsMeta(ABCMeta):
     @classmethod
-    def __prepare__(cls, __name: str, __bases: Tuple[type, ...], **kwargs: Any) -> Mapping[str, object]:
+    def __prepare__(cls, __name: str, __bases: Tuple[type, ...], **kwargs: Any) -> MutableMapping[str, object]:
         return {'__slots__': (), '__slots_ex__': ()}
 
     def __new__(
@@ -246,7 +245,7 @@ class OrderedSet(MutableSet[T], Generic[T], ABC):
     def __repr__(self) -> str:
         return self.__str__()
 
-    def __reversed__(self) -> reversed[T]:
+    def __reversed__(self) -> Iterator[T]:
         return reversed(self.__odict)
 
     # Abstract methods
