@@ -572,6 +572,15 @@ class ProjectGarbage(_MetaData):
     active__line: int
     keyframes__file: str
 
+    @property
+    def file(self) -> tuple[str, str]:
+        return self.video__file, self.audio__file
+
+    @file.setter
+    def file(self, value: str) -> None:
+        self.video__file = value
+        self.audio__file = value
+
     @classmethod
     def get_default(cls) -> ProjectGarbage:
         return cls()
