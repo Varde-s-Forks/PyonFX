@@ -73,6 +73,24 @@ class Ass(AutoSlots):
     _ptime: float
     _fix_timestamps: bool
 
+    @overload
+    def __init__(
+        self, input_: AnyPath, output: AnyPath | None = None,
+        fps: float = ...,
+        extended: bool = True, vertical_kanji: bool = False,
+        fix_timestamps: bool = True
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self, input_: None, output: AnyPath | None = None,
+        fps: float | None = ...,
+        extended: bool = True, vertical_kanji: bool = False,
+        fix_timestamps: bool = True
+    ) -> None:
+        ...
+
     def __init__(
         self, input_: AnyPath | None, output: AnyPath | None = None,
         fps: float | None = 24000 / 1001,
