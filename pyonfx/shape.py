@@ -25,11 +25,18 @@ __all__ = [
 ]
 import inspect
 import re
-# import sys
+import sys
 from abc import ABC, abstractmethod
 from collections import deque
 from copy import deepcopy
-from enum import Enum, StrEnum, auto
+from enum import Enum, auto
+
+if sys.version_info >= (3, 11):
+    from enum import StrEnum
+else:
+    class StrEnum(str, Enum):
+        ...
+
 from math import atan, ceil, cos, degrees, isfinite, radians, sqrt
 from typing import (
     Any, Callable, Deque, Dict, Iterable, List, MutableSequence, NamedTuple, Optional, Sequence,
