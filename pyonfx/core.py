@@ -41,6 +41,7 @@ from typing import (
 )
 
 from more_itertools import zip_offset
+from typing_extensions import Self
 
 from ._logging import logger
 from ._metadata import __version__
@@ -1080,8 +1081,7 @@ class Line(_AssText, slots_ex=True):
         return self
 
     @classmethod
-    def get_default(cls, style: Style) -> Line:
-        line = Line()
+    def get_default(cls, style: Style) -> Self:
         line.layer = 0
         line.start_time = Time.from_ts('0:00:00.00')
         line.end_time = Time.from_ts('0:00:05.00')
