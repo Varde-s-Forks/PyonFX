@@ -1082,6 +1082,8 @@ class Line(_AssText, slots_ex=True):
 
     @classmethod
     def get_default(cls, style: Style) -> Self:
+        line = cls()
+        line.comment = False
         line.layer = 0
         line.start_time = Time.from_ts('0:00:00.00')
         line.end_time = Time.from_ts('0:00:05.00')
