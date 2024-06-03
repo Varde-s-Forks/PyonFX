@@ -116,4 +116,4 @@ class Logger(Singleton):
         return loguru.logger.catch(func)
 
 
-logger = Logger()
+logger: Logger = Logger()
