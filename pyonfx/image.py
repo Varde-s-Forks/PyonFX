@@ -33,7 +33,7 @@ class Image:
 
         :return:            List of Pixel
         """
-        import cv2 # type: ignore
+        import cv2  # type: ignore
         img_bgr = cv2.imread(str(self.path))
         rows, columns, channels = img_bgr.shape
         return [

@@ -114,7 +114,7 @@ class PointCartesian3D(Cartesian3D, Point):
         """
         # https://docs.opencv.org/4.5.3/d9/d0c/group__calib3d.html#ga1019495a2c8d1743ed5cc23fa0daff8c
         # Length of the camera seems to be 312 according to my tests
-        import cv2 # type: ignore
+        import cv2  # type: ignore
         img_pts, _ = cv2.projectPoints(
             objectPoints=np.array(self, np.float64),
             rvec=np.zeros(3, np.float64),
