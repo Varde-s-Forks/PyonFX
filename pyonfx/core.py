@@ -318,7 +318,7 @@ class Ass(AutoSlots):
                     + '\n'
                 )
 
-        logger.user_info(f"Produced lines: {len(self._output_lines)}")
+        logger.user_info(f"Produced lines: {len(self._output_lines + (list(lines) if lines else []))}")
         logger.user_info(f"Process duration (in seconds): {round(time.time() - self._ptime, ndigits=3)}")
 
     @logger.catch
