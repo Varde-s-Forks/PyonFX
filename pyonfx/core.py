@@ -948,9 +948,9 @@ class _AssText(_PositionedText, ABC, empty_slots=True):
 
     def shift_time(self, time: float | Time) -> None:
         """
-        Convenience function to shift start end times of current AssText object
+        Convenience function to shift start and end times of current AssText object
 
-        :param time:        Float of Time value to shift the current AssText object to
+        :param time:        Float or Time value to shift the current AssText object to
         """
         self.start_time += time
         self.end_time += time
