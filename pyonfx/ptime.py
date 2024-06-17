@@ -3,6 +3,8 @@ from __future__ import annotations
 __all__ = ['Time']
 
 import math
+import warnings
+
 from fractions import Fraction
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Literal, Self
@@ -14,8 +16,6 @@ else:
 
 from ._logging import logger
 from .misc import cround
-
-_TimeT = TypeVar('_TimeT', bound='Time')
 
 
 class Time(float):
@@ -108,7 +108,7 @@ class Time(float):
         """
         return round(self * fps)
 
-    def ass_frame(self, fps: Fraction | float, is_start: bool) -> int:
+    def assframe(self, fps: Fraction | float, is_start: bool) -> int:
         """
         Get the current ASS frame of the current Time
 
@@ -117,6 +117,10 @@ class Time(float):
         :return:                ASS frame.
         """
         return math.ceil(self.__float__() * fps) - (0 if is_start else 1)
+
+    def ass_frame(self, fps: Fraction | float, is_start: bool) -> int:
+        warnings.warn('Deprecated method; use "assframe" instead')
+        return self.assframe(fps, is_start)
 
     @classmethod
     def from_ts(cls, ts: str, /) -> Time:
@@ -215,7 +219,7 @@ def bound2assframe(time: Time, fps: Fraction | float, /, is_start: bool, shifted
     if not shifted:
         time -= fps ** -1 * 0.5
 
-    f = time.ass_frame(fps, is_start)
+    f = time.assframe(fps, is_start)
     ntime = Time.from_assframe(f, fps, is_start)
 
     if not shifted:
