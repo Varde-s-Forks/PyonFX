@@ -7,7 +7,9 @@ import warnings
 
 from fractions import Fraction
 from functools import lru_cache
-from typing import TYPE_CHECKING, Any, Literal, Self
+from typing import TYPE_CHECKING, Any, Literal
+
+from typing_extensions import Self
 
 if TYPE_CHECKING:
     from _typeshed import ConvertibleToFloat
