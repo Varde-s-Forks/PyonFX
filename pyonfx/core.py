@@ -976,6 +976,7 @@ class _AssText(_PositionedText, ABC, empty_slots=True):
         self.start_time *= input_fps / output_fps  # type: ignore[assignment]
         self.end_time *= input_fps / output_fps  # type: ignore[assignment]
 
+    def to_shape(self, fscx: float | None = None, fscy: float | None = None, copy: bool = True) -> Shape:
         """
         Convert current AssText object to shape based on its Style attribute.
 
