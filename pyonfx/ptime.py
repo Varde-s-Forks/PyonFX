@@ -5,7 +5,12 @@ __all__ = ['Time']
 import math
 from fractions import Fraction
 from functools import lru_cache
-from typing import Literal, TypeVar
+from typing import TYPE_CHECKING, Any, Literal, Self
+
+if TYPE_CHECKING:
+    from _typeshed import ConvertibleToFloat
+else:
+    ConvertibleToFloat = Any
 
 from ._logging import logger
 from .misc import cround
@@ -15,7 +20,7 @@ _TimeT = TypeVar('_TimeT', bound='Time')
 
 class Time(float):
     """Time interface"""
-    def __new__(cls, seconds: float) -> Time:
+    def __new__(cls, seconds: ConvertibleToFloat) -> Time:
         """
         Make a new Time object
 
@@ -24,46 +29,46 @@ class Time(float):
         """
         return super().__new__(cls, seconds)
 
-    def __add__(self: _TimeT, __x: float | _TimeT) -> _TimeT:
-        return self.__class__(super().__add__(__x))
+    def __add__(self: Self, __x: float) -> Self:
+        return self.__class__(super().__add__(float(__x)))
 
-    def __sub__(self: _TimeT, __x: float | _TimeT) -> _TimeT:
-        return self.__class__(super().__sub__(__x))
+    def __sub__(self: Self, __x: float) -> Self:
+        return self.__class__(super().__sub__(float(__x)))
 
-    def __mul__(self: _TimeT, __x: float | _TimeT) -> _TimeT:
-        return self.__class__(super().__mul__(__x))
+    def __mul__(self: Self, __x: float) -> Self:
+        return self.__class__(super().__mul__(float(__x)))
 
-    def __floordiv__(self: _TimeT, __x: float | _TimeT) -> _TimeT:
-        return self.__class__(super().__floordiv__(__x))
+    def __floordiv__(self: Self, __x: float) -> Self:
+        return self.__class__(super().__floordiv__(float(__x)))
 
-    def __truediv__(self: _TimeT, __x: float | _TimeT) -> _TimeT:
-        return self.__class__(super().__truediv__(__x))
+    def __truediv__(self: Self, __x: float) -> Self:
+        return self.__class__(super().__truediv__(float(__x)))
 
-    def __mod__(self: _TimeT, __x: float | _TimeT) -> _TimeT:
-        return self.__class__(super().__mod__(__x))
+    def __mod__(self: Self, __x: float) -> Self:
+        return self.__class__(super().__mod__(float(__x)))
 
-    def __radd__(self: _TimeT, __x: float | _TimeT) -> _TimeT:
-        return self.__class__(super().__radd__(__x))
+    def __radd__(self: Self, __x: float) -> Self:
+        return self.__class__(super().__radd__(float(__x)))
 
-    def __rsub__(self: _TimeT, __x: float | _TimeT) -> _TimeT:
-        return self.__class__(super().__rsub__(__x))
+    def __rsub__(self: Self, __x: float) -> Self:
+        return self.__class__(super().__rsub__(float(__x)))
 
-    def __rmul__(self: _TimeT, __x: float | _TimeT) -> _TimeT:
-        return self.__class__(super().__rmul__(__x))
+    def __rmul__(self: Self, __x: float) -> Self:
+        return self.__class__(super().__rmul__(float(__x)))
 
-    def __rfloordiv__(self: _TimeT, __x: float | _TimeT) -> _TimeT:
-        return self.__class__(super().__rfloordiv__(__x))
+    def __rfloordiv__(self: Self, __x: float) -> Self:
+        return self.__class__(super().__rfloordiv__(float(__x)))
 
-    def __rtruediv__(self: _TimeT, __x: float | _TimeT) -> _TimeT:
-        return self.__class__(super().__rtruediv__(__x))
+    def __rtruediv__(self: Self, __x: float) -> Self:
+        return self.__class__(super().__rtruediv__(float(__x)))
 
-    def __rmod__(self: _TimeT, __x: float | _TimeT) -> _TimeT:
-        return self.__class__(super().__rmod__(__x))
+    def __rmod__(self: Self, __x: float) -> Self:
+        return self.__class__(super().__rmod__(float(__x)))
 
-    def __neg__(self: _TimeT) -> _TimeT:
+    def __neg__(self: Self) -> Self:
         return self.__class__(super().__neg__())
 
-    def __pos__(self: _TimeT) -> _TimeT:
+    def __pos__(self: Self) -> Self:
         return self.__class__(super().__pos__())
 
     def ts(self, precision: Literal[0, 3, 6, 9] = 3) -> str:

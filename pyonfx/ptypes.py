@@ -238,7 +238,7 @@ class OrderedSet(MutableSet[T], Generic[T], ABC):
 
     def __init__(self, __iterable: Iterable[T] | None = None, /) -> None:
         if __iterable is not None:
-            self.__odict = OrderedDict.fromkeys(__iterable, None)  # type: ignore[assignment]
+            self.__odict = OrderedDict.fromkeys(__iterable, None)
         else:
             self.__odict = OrderedDict()
 

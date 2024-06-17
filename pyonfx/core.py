@@ -477,7 +477,7 @@ class Meta(_DataCore):
     script_info: ScriptInfo
     project_garbage: ProjectGarbage
 
-    fps: float
+    fps: Fraction | float
     """FrameRate per Second"""
 
     @classmethod
@@ -539,7 +539,7 @@ class ScriptInfo(_MetaData, slots_ex=True, slots_ex_exclude='play_res'):
     _scaled_border_and_shadow: AssBool
 
     @property
-    def scaled_border_and_shadow(self) -> AssBool | bool:
+    def scaled_border_and_shadow(self) -> AssBool:
         """Determines if it has to be used script resolution (*True*) or video resolution (*False*) to scale border and shadow"""
         return self._scaled_border_and_shadow
 
@@ -582,7 +582,7 @@ class ScriptInfo(_MetaData, slots_ex=True, slots_ex_exclude='play_res'):
         si.title = 'Default Aegisub file'
         si.script_type = 'v4.00+'
         si.wrap_style = 0
-        si.scaled_border_and_shadow = True
+        si.scaled_border_and_shadow = True  # type: ignore[assignment]
         si.y_cb_cr__matrix = 'None'
         return si
 
@@ -647,7 +647,7 @@ class Style(_DataCore):
     _strikeout: StyleBool
 
     @property
-    def bold(self) -> StyleBool | bool:
+    def bold(self) -> StyleBool:
         """Font with bold"""
         return self._bold
 
@@ -656,7 +656,7 @@ class Style(_DataCore):
         self._bold = StyleBool(-1 if x else 0) if isinstance(x, bool) else x
 
     @property
-    def italic(self) -> StyleBool | bool:
+    def italic(self) -> StyleBool:
         """Font with italic"""
         return self._italic
 
@@ -665,7 +665,7 @@ class Style(_DataCore):
         self._italic = StyleBool(-1 if x else 0) if isinstance(x, bool) else x
 
     @property
-    def underline(self) -> StyleBool | bool:
+    def underline(self) -> StyleBool:
         """Font with underline"""
         return self._underline
 
@@ -674,7 +674,7 @@ class Style(_DataCore):
         self._underline = StyleBool(-1 if x else 0) if isinstance(x, bool) else x
 
     @property
-    def strikeout(self) -> StyleBool | bool:
+    def strikeout(self) -> StyleBool:
         """Font with strikeout"""
         return self._strikeout
 
@@ -693,7 +693,7 @@ class Style(_DataCore):
     _border_style: BorderStyleBool
 
     @property
-    def border_style(self) -> BorderStyleBool | bool:
+    def border_style(self) -> BorderStyleBool:
         """*True* for opaque box, *False* for standard outline"""
         return self._border_style
 
@@ -1060,9 +1060,11 @@ class Line(_AssText, slots_ex=True, slots_ex_exclude='tags'):
 
     @classmethod
     @logger.catch(force_exit=True)
-    def from_text(cls, text: str, i: int, fps: float,
-                  meta: Optional[Meta] = None, styles: Optional[Iterable[Style]] = None,
-                  fix_timestamps: bool = True) -> Line:
+    def from_text(
+        cls, text: str, i: int, fps: float,
+        meta: Meta | None = None, styles: Iterable[Style] | None = None,
+        fix_timestamps: bool = True,
+    ) -> Line:
         """
         Make a Line object from a .ass text line
 
@@ -1073,7 +1075,7 @@ class Line(_AssText, slots_ex=True, slots_ex_exclude='tags'):
         :param styles:          Iterable of Style, defaults to None
         :param fix_timestamps:  If True, will fix the timestamps on their real start and end time.
                                 If False, start and end times will just be the raw timestamps.
-        :return:            A Line object
+        :return:                A Line object
         """
         self = cls()
 
