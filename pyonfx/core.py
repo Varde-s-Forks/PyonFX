@@ -499,6 +499,7 @@ class Meta(_DataCore):
         meta = cls()
         meta.script_info = ScriptInfo.get_default()
         meta.project_garbage = ProjectGarbage.get_default()
+        meta.fps = 24000/1001
         return meta
 
 
