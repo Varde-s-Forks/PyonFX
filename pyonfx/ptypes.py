@@ -163,8 +163,8 @@ class AutoSlotsMeta(ABCMeta):
         namespace['__slots__'] = tuple(k for k in _all_slots if k not in namespace)
 
         if slots_ex:
-            slots_ex_exclude = (slots_ex_exclude, ) if isinstance(slots_ex_exclude, str) else slots_ex_exclude if slots_ex_exclude else tuple[str]()
-            namespace['__slots_ex__'] = namespace['__slots__'] + tuple(set(attrs) - set(slots_ex_exclude))
+            sex_exld = (slots_ex_exclude, ) if isinstance(slots_ex_exclude, str) else slots_ex_exclude if slots_ex_exclude else tuple[str]()
+            namespace['__slots_ex__'] = namespace['__slots__'] + tuple(set(attrs) - set(sex_exld))
 
         return super().__new__(cls, name, bases, namespace, **kwargs)
 
