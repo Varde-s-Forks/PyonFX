@@ -529,7 +529,7 @@ class _MetaData(_DataCore, empty_slots=True):
         return section
 
 
-class ScriptInfo(_MetaData, slots_ex=True):
+class ScriptInfo(_MetaData, slots_ex=True, slots_ex_exclude='play_res'):
     title: str
     script_type: str
 
@@ -561,6 +561,15 @@ class ScriptInfo(_MetaData, slots_ex=True):
     synch__point: str
     script__updated__by: str
     update__details: str
+
+    @property
+    def play_res(self) -> tuple[int, int]:
+        """Video width/height"""
+        return self.play_res_x, self.play_res_y
+
+    @play_res.setter
+    def play_res(self, value: tuple[int, int]) -> None:
+        self.play_res_x, self.play_res_y = value
 
     @classmethod
     def get_default(cls) -> ScriptInfo:
@@ -1015,7 +1024,7 @@ class _AssText(_PositionedText, ABC, empty_slots=True):
         return self.to_shape().to_pixels(supersampling, anti_aliasing)
 
 
-class Line(_AssText, slots_ex=True):
+class Line(_AssText, slots_ex=True, slots_ex_exclude='tags'):
     """
     Line object contains informations about a single line in the Ass.
 
@@ -1545,6 +1554,19 @@ class Line(_AssText, slots_ex=True):
                 char.y = char.middle
                 cur_y += char.height
 
+    @property
+    def tags(self) -> tuple[_Tag, ...]:
+        pos = 0
+        tagsl = list[_Tag]()
+        for tag_match in re.finditer(r"\{.*?\}", self.raw_text):
+            tags = tag_match.group(0).replace('{', '').replace('}', '').split('\\')
+            for tag in tags:
+                if not tag:
+                    continue
+                tagsl.append(_Tag(tag, tag_match.start() - pos))
+            pos += tag_match.end() - tag_match.start()
+        return tuple(tagsl)
+
     def as_text(self, *, fix_timestamps: bool = True) -> str:
         """
         Get the current Line as ASS text
@@ -1654,6 +1676,11 @@ class PList(UserList[_AssTextT]):
             if not (x.text.strip() != '' and x.duration > 0):
                 data.remove(x)
         return self.__class__(data) if return_new else None
+
+
+class _Tag(NamedTuple):
+    text: str
+    position: int
 
 
 class _Section(NamedMutableSequence[Any]):

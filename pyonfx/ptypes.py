@@ -124,7 +124,9 @@ class AutoSlotsMeta(ABCMeta):
 
     def __new__(
         cls, name: str, bases: Tuple[type, ...], namespace: Dict[str, Any],
-        empty_slots: bool = False, slots_ex: bool = False, **kwargs: Any
+        empty_slots: bool = False, slots_ex: bool = False,
+        slots_ex_exclude: str | tuple[str, ...] | None = None,
+        **kwargs: Any
     ) -> AutoSlotsMeta:
         if empty_slots:
             return super().__new__(cls, name, bases, namespace, **kwargs)
@@ -161,7 +163,8 @@ class AutoSlotsMeta(ABCMeta):
         namespace['__slots__'] = tuple(k for k in _all_slots if k not in namespace)
 
         if slots_ex:
-            namespace['__slots_ex__'] = namespace['__slots__'] + tuple(attrs)
+            slots_ex_exclude = (slots_ex_exclude, ) if isinstance(slots_ex_exclude, str) else slots_ex_exclude if slots_ex_exclude else tuple[str]()
+            namespace['__slots_ex__'] = namespace['__slots__'] + tuple(set(attrs) - set(slots_ex_exclude))
 
         return super().__new__(cls, name, bases, namespace, **kwargs)
 
