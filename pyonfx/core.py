@@ -453,7 +453,7 @@ class _DataCore(AutoSlots, Iterable[Tuple[str, Any]], ABC, empty_slots=True):
             self._pretty_print.cache_clear()
 
     def __repr__(self) -> str:
-        return pformat(self._asdict())
+        return super().__repr__()
 
     def _asdict(self) -> Dict[str, Any]:
         return {k: v._asdict() if isinstance(v, _DataCore) else v for k, v in self}
