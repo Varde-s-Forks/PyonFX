@@ -48,7 +48,7 @@ from ._metadata import __version__
 from .colourspace import ASSColor, Opacity
 from .exception import LineNotFoundWarning, MatchNotFoundError
 from .font import Font, get_font
-from .ptime import Time
+from .ptime import Time, bound2assframe
 from .ptypes import (
     Alignment, AnyPath, AssBool, AutoSlots, BorderStyleBool, CustomBool, NamedMutableSequence,
     OrderedSet, StyleBool
@@ -955,7 +955,16 @@ class _AssText(_PositionedText, ABC, empty_slots=True):
         self.start_time += time
         self.end_time += time
 
-    def to_shape(self, fscx: Optional[float] = None, fscy: Optional[float] = None, copy: bool = True) -> Shape:
+    def shift_time0(self, fps: float | Fraction = 24000/1001, shifted: bool = False) -> None:
+        """
+        Convenience function to shift by 0 frame to fix frame timing issues.
+        This does not currently exactly reproduce the aegisub behaviour but it should have the same effect.
+
+        :param fps:         Framerate used to perform the shift
+        :param shifted:     Whether the time has already been shifted from Aegisub or not, defaults to False
+        """
+        self.start_time = bound2assframe(self.start_time, fps, True, shifted)
+        self.end_time = bound2assframe(self.end_time, fps, False, shifted)
         """
         Convert current AssText object to shape based on its Style attribute.
 
