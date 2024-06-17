@@ -1154,19 +1154,21 @@ class Line(_AssText, slots_ex=True, slots_ex_exclude='tags'):
         return self
 
     @classmethod
-    def get_default(cls, style: Style) -> Self:
+    def get_default(cls, style: Style = Style.get_default()) -> Self:
         line = cls()
         line.comment = False
         line.layer = 0
         line.start_time = Time.from_ts('0:00:00.00')
         line.end_time = Time.from_ts('0:00:05.00')
         line.style = style
+        line.meta = Meta.get_default()
         line.actor = ''
         line.margin_l = 0
         line.margin_r = 0
         line.margin_v = 0
         line.effect = ''
-        line.text = ''
+        line.raw_text = ''
+        line.text = line.raw_text
         return line
 
     def add_data(self, font: Font) -> None:
