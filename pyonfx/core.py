@@ -230,6 +230,17 @@ class Ass(AutoSlots):
         """PList of lines included in the .ass file"""
         return self._lines
 
+    @property
+    def styles_map(self) -> Mapping[str, Style]:
+        return {s.name: s for s in self.styles}
+
+    def clean_styles(self) -> None:
+        """Deletes unused styles from the Ass file"""
+        self.styles = [
+            self.styles_map[sname]
+            for sname in OrderedSet(s.name for s in self.styles) & {line.style.name for line in self.lines}
+        ]
+
     def add_line(self, line: Line, fix_timestamps: Optional[bool] = None) -> None:
         """
         Format a Line to a string suitable for writing into ASS file
