@@ -965,6 +965,17 @@ class _AssText(_PositionedText, ABC, empty_slots=True):
         """
         self.start_time = bound2assframe(self.start_time, fps, True, shifted)
         self.end_time = bound2assframe(self.end_time, fps, False, shifted)
+
+    def change_fps(self, input_fps: float | Fraction, output_fps: float | Fraction) -> None:
+        """
+        Change framerate of the line time
+
+        :param input_fps:   Original FPS
+        :param output_fps:  Target FPS
+        """
+        self.start_time *= input_fps / output_fps  # type: ignore[assignment]
+        self.end_time *= input_fps / output_fps  # type: ignore[assignment]
+
         """
         Convert current AssText object to shape based on its Style attribute.
 
