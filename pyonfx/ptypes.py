@@ -8,8 +8,8 @@ from os import PathLike
 from types import FunctionType, MemberDescriptorType, MethodType
 from typing import (
     AbstractSet, Any, Callable, Collection, Dict, Generic, Iterable, Iterator, Literal,
-    MutableMapping, MutableSet, Reversible, Sequence, Tuple, TypeVar, Union, cast, final, get_args,
-    get_origin, overload
+    MutableMapping, MutableSet, NamedTuple, Reversible, Sequence, Tuple, TypeVar, Union, cast,
+    final, get_args, get_origin, overload
 )
 
 from numpy.typing import NDArray
@@ -439,3 +439,15 @@ class BorderStyleBool(CustomBool):
 
     def __str__(self) -> str:
         return {3: 'True', 1: 'False'}[self]
+
+
+class _Tag(NamedTuple):
+    text: str
+    position: int
+
+
+class _Section(NamedMutableSequence[Any]):
+    name: str
+    start: int
+    end: int | None
+    text: str

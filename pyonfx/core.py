@@ -36,8 +36,8 @@ from collections import UserList, defaultdict
 from fractions import Fraction
 from functools import lru_cache
 from typing import (
-    Any, DefaultDict, Dict, Iterable, Iterator, List, Literal, Mapping, NamedTuple, Optional, Tuple,
-    Type, TypeVar, Union, overload
+    Any, DefaultDict, Dict, Iterable, Iterator, List, Literal, Mapping, Optional, Tuple, Type,
+    TypeVar, Union, overload
 )
 
 from more_itertools import zip_offset
@@ -50,8 +50,8 @@ from .exception import LineNotFoundWarning, MatchNotFoundError
 from .font import Font, get_font
 from .ptime import Time, bound2assframe
 from .ptypes import (
-    Alignment, AnyPath, AssBool, AutoSlots, BorderStyleBool, CustomBool, NamedMutableSequence,
-    OrderedSet, StyleBool
+    Alignment, AnyPath, AssBool, AutoSlots, BorderStyleBool, CustomBool, OrderedSet, StyleBool,
+    _Section, _Tag
 )
 from .shape import Pixel, Shape
 
@@ -1596,15 +1596,29 @@ class Line(_AssText, slots_ex=True, slots_ex_exclude='tags'):
 
     @property
     def tags(self) -> tuple[_Tag, ...]:
-        pos = 0
+        """
+        Get tags from the raw_text line
+
+        :return: _description_
+        """
         tagsl = list[_Tag]()
+        pos = 0
         for tag_match in re.finditer(r"\{.*?\}", self.raw_text):
-            tags = tag_match.group(0).replace('{', '').replace('}', '').split('\\')
+            tags = re.split(r'(\\t.+?\))', tag_match.group(0).replace('{', '').replace('}', ''))
+
             for tag in tags:
-                if not tag:
+                if tag.startswith('\\t'):
+                    tag = tag[1:]
+                    pos = self.raw_text.find(tag, pos)
+                    tagsl.append(_Tag(tag, pos))
                     continue
-                tagsl.append(_Tag(tag, tag_match.start() - pos))
-            pos += tag_match.end() - tag_match.start()
+
+                for tag_s in tag.split('\\'):
+                    if not tag_s:
+                        continue
+                    pos = self.raw_text.find(tag_s, pos)
+                    tagsl.append(_Tag(tag_s, pos))
+
         return tuple(tagsl)
 
     def as_text(self, *, fix_timestamps: bool = True) -> str:
@@ -1718,13 +1732,3 @@ class PList(UserList[_AssTextT]):
         return self.__class__(data) if return_new else None
 
 
-class _Tag(NamedTuple):
-    text: str
-    position: int
-
-
-class _Section(NamedMutableSequence[Any]):
-    name: str
-    start: int
-    end: Optional[int]
-    text: str
