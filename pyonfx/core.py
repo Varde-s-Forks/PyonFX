@@ -826,6 +826,57 @@ class Style(_DataCore):
     def get_default(cls) -> Style:
         return cls.from_text('Style: Default,Arial,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1')
 
+    def resample(
+        self,
+        src_res: Meta | ScriptInfo | tuple[int, int],
+        target_res: tuple[int, int] = (1920, 1080),
+        scaled_border_and_shadow: bool = True
+    ) -> None:
+        """
+        Resample current style to a target resolution
+
+        :param src_res:                     Source resolution. Can be a Meta, ScriptInfo object or a tuple of width x height
+        :param target_res:                  Target resolution, defaults to (1920, 1080)
+        :param scaled_border_and_shadow:    Refers to ScriptInfo.scaled_border_and_shadow, defaults to True
+        """
+        if isinstance(src_res, Meta):
+            src_res_x, src_res_y = src_res.script_info.play_res
+            scaled_border_and_shadow = scaled_border_and_shadow or bool(src_res.script_info.scaled_border_and_shadow)
+        elif isinstance(src_res, ScriptInfo):
+            src_res_x, src_res_y = src_res.play_res
+            scaled_border_and_shadow = scaled_border_and_shadow or bool(src_res.scaled_border_and_shadow)
+        elif isinstance(src_res, tuple):
+            src_res_x, src_res_y = src_res
+        # else:
+        #     try:
+        #         meta = cast(Meta, getattr(self, 'meta'))
+        #     except AttributeError as attr_err:
+        #         raise AttributeError from attr_err
+        #     src_res_x, src_res_y = meta.script_info.play_res
+        #     scaled_border_and_shadow = scaled_border_and_shadow or bool(meta.script_info.scaled_border_and_shadow)
+
+        target_res_x, target_res_y = target_res
+
+        scale_width = target_res_x / src_res_x
+        scale_height = target_res_y / src_res_y
+        old_ar = src_res_x / src_res_y
+        new_ar = target_res_y / target_res_y
+
+        horizontal_stretch = 1.0
+        if abs(old_ar - new_ar) / new_ar > 0.01:
+            horizontal_stretch = new_ar / old_ar
+
+        self.fontsize = round(self.fontsize * scale_height)
+        self.scale_x *= horizontal_stretch
+        self.spacing *= scale_width
+        self.margin_l = round(self.margin_l * scale_width)
+        self.margin_r = round(self.margin_r * scale_width)
+        self.margin_v = round(self.margin_r * scale_height)
+
+        if scaled_border_and_shadow:
+            self.outline = round(self.outline * scale_height, 5)
+            self.shadow = round(self.shadow * scale_height, 5)
+
     def as_text(self) -> str:
         """
         Get the current Style as ASS text
