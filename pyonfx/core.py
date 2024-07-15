@@ -1624,6 +1624,16 @@ class Line(_AssText, slots_ex=True, slots_ex_exclude='tags'):
 
         return tuple(tagsl)
 
+    def clean_tags(self) -> None:
+        """
+        Remove all existing tags from the line text
+
+        :return: _description_
+        """
+        self.raw_text = re.sub(r"\{.*?\}", "", self.raw_text)
+        self.text = self.raw_text
+        return None
+
     def as_text(self, *, fix_timestamps: bool = True) -> str:
         """
         Get the current Line as ASS text
