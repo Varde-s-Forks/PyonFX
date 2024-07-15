@@ -186,8 +186,6 @@ class Ass(AutoSlots):
             try:
                 line_style = line.style
             except AttributeError:
-                logger.user_warning(f'{LineNotFoundWarning()}: Line {line.i} is using an undefined style, skipping...')
-                logger.debug(f'{line.i}: {line.raw_text}')
                 continue
             lines_by_styles[line_style.name].append(line)
 
@@ -232,7 +230,7 @@ class Ass(AutoSlots):
 
     @property
     def styles_map(self) -> Mapping[str, Style]:
-        return {s.name: s for s in self.styles}
+        return _styles_tuple_to_map(tuple(self.styles))
 
     def clean_styles(self) -> None:
         """Deletes unused styles from the Ass file"""
@@ -1005,8 +1003,8 @@ class _AssText(_PositionedText, ABC, empty_slots=True):
         # Obtaining font information from style and obtaining shape
         font = get_font(obj.style)
         shape = font.text_to_shape(obj.text)
-        # Clearing resources to not let overflow errors take over
-        del font, obj
+
+        del obj
 
         return shape
 
@@ -1134,13 +1132,6 @@ class Line(_AssText, slots_ex=True, slots_ex_exclude='tags'):
             self.end_time = Time.from_ts(linesplit[2])
         self.duration = self.end_time - self.start_time
 
-        if styles:
-            for style in styles:
-                if style.name == linesplit[3]:
-                    self.style = style
-                    break
-        if meta:
-            self.meta = meta
         self.actor = linesplit[4]
 
         self.margin_l = int(linesplit[5])
@@ -1151,6 +1142,16 @@ class Line(_AssText, slots_ex=True, slots_ex_exclude='tags'):
 
         self.raw_text = ",".join(linesplit[9:])
         self.text = self.raw_text
+
+        if meta:
+            self.meta = meta
+
+        if styles:
+            try:
+                self.style = _styles_tuple_to_map(tuple(styles))[linesplit[3]]
+            except KeyError:
+                logger.user_warning(f'{LineNotFoundWarning()}: Line {self.i} is using an undefined style, skipping...')
+                logger.debug(f'{self.i}: {self.raw_text}')
 
         return self
 
@@ -1732,3 +1733,6 @@ class PList(UserList[_AssTextT]):
         return self.__class__(data) if return_new else None
 
 
+@lru_cache
+def _styles_tuple_to_map(styles: tuple[Style]) -> dict[str, Style]:
+    return {s.name: s for s in styles}
