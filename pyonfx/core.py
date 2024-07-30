@@ -35,6 +35,7 @@ from abc import ABC
 from collections import UserList, defaultdict
 from fractions import Fraction
 from functools import lru_cache
+from itertools import count
 from typing import (
     Any, DefaultDict, Dict, Iterable, Iterator, List, Literal, Mapping, Optional, Tuple, Type,
     TypeVar, Union, overload
@@ -169,12 +170,12 @@ class Ass(AutoSlots):
         except KeyError:
             logger.user_warning('There is no [Events] section in this file')
         else:
-            for i, ltext in enumerate(sec.text.strip().splitlines()[1:]):
+            n = count(0, 1)
+            for ltext in sec.text.strip().splitlines()[1:]:
                 if not ltext:
-                    logger.user_warning(f'Line n° {i} is an empty line in the [Events] section')
                     continue
                 self._lines.append(
-                    Line.from_text(ltext, i, fps, self.meta, self.styles, fix_timestamps)
+                    Line.from_text(ltext, next(n), fps, self.meta, self.styles, fix_timestamps)
                 )
 
         if not extended:
