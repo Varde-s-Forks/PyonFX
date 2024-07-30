@@ -231,7 +231,7 @@ class Ass(AutoSlots):
 
     @property
     def styles_map(self) -> Mapping[str, Style]:
-        return _styles_tuple_to_map(tuple(self.styles))
+        return _styles_to_map(self.styles)
 
     def clean_styles(self) -> None:
         """Deletes unused styles from the Ass file"""
@@ -1203,12 +1203,12 @@ class Line(_AssText, slots_ex=True, slots_ex_exclude='tags'):
 
         if styles:
             try:
-                style = _styles_tuple_to_map(tuple(styles))[linesplit[3]]
+                style = _styles_to_map(styles)[linesplit[3]]
             except KeyError:
                 logger.user_warning(f'{LineNotFoundWarning()}: Line {self.i} is using an undefined style, assigning default style...')
                 logger.debug(f'{self.i}: {self.raw_text}')
                 try:
-                    style = copy.deepcopy(_styles_tuple_to_map(tuple(styles))['Default'])
+                    style = copy.deepcopy(_styles_to_map(styles)['Default'])
                 except KeyError:
                     style = Style.get_default()
                 finally:
@@ -1805,6 +1805,10 @@ class PList(UserList[_AssTextT]):
         return self.__class__(data) if return_new else None
 
 
+def _styles_to_map(styles: Iterable[Style]) -> dict[str, Style]:
+    return _styles_tuple_to_map(tuple(styles))
+
+
 @lru_cache
-def _styles_tuple_to_map(styles: tuple[Style]) -> dict[str, Style]:
+def _styles_tuple_to_map(styles: tuple[Style, ...]) -> dict[str, Style]:
     return {s.name: s for s in styles}
