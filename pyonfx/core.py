@@ -237,7 +237,7 @@ class Ass(AutoSlots):
         """Deletes unused styles from the Ass file"""
         self.styles = [
             self.styles_map[sname]
-            for sname in OrderedSet(s.name for s in self.styles) & {line.style.name for line in self.lines}
+            for sname in OrderedSet(line.style.name for line in self.lines) & OrderedSet(s.name for s in self.styles)
         ]
 
     def add_line(self, line: Line, fix_timestamps: Optional[bool] = None) -> None:
