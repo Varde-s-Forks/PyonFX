@@ -1683,7 +1683,6 @@ class Line(_AssText, slots_ex=True, slots_ex_exclude='tags'):
         """
         self.raw_text = re.sub(r"\{.*?\}", "", self.raw_text)
         self.text = self.raw_text
-        return None
 
     def as_text(self, *, fix_timestamps: bool = True) -> str:
         """
