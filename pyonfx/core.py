@@ -604,6 +604,7 @@ class ScriptInfo(_MetaData, slots_ex=True, slots_ex_exclude='play_res'):
 class ProjectGarbage(_MetaData):
     automation__scripts: str
     export__encoding: str
+    last__style__storage: str
     audio__file: str
     """Loaded audio path (absolute)"""
     video__file: str
