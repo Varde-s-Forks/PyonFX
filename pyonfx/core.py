@@ -259,7 +259,7 @@ class Ass(AutoSlots):
     def save(
         self,
         lines: Optional[Iterable[Line]] = None,
-        comment_original: bool = True, fix_timestamps: bool = True,
+        comment_original: bool = True, fix_timestamps: bool | None = None,
         keep_extradata: bool = True
     ) -> None:
         """
