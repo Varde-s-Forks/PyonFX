@@ -65,7 +65,7 @@ Nb8bit = Annotated[int, ValueRangeInclExcl(0, 256)]
 Nb16bit = Annotated[int, ValueRangeInclExcl(0, 65536)]
 NbFloat = Annotated[float, ValueRangeIncInc(0.0, 1.0)]
 Pct = Annotated[float, ValueRangeIncInc(0.0, 1.0)]
-Alignment = Literal[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+Alignment = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 
 def check_annotations(func: F, /) -> F:
