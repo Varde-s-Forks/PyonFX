@@ -1203,10 +1203,18 @@ class Line(_AssText, slots_ex=True, slots_ex_exclude='tags'):
 
         if styles:
             try:
-                self.style = _styles_tuple_to_map(tuple(styles))[linesplit[3]]
+                style = _styles_tuple_to_map(tuple(styles))[linesplit[3]]
             except KeyError:
-                logger.user_warning(f'{LineNotFoundWarning()}: Line {self.i} is using an undefined style, skipping...')
+                logger.user_warning(f'{LineNotFoundWarning()}: Line {self.i} is using an undefined style, assigning default style...')
                 logger.debug(f'{self.i}: {self.raw_text}')
+                try:
+                    style = copy.deepcopy(_styles_tuple_to_map(tuple(styles))['Default'])
+                except KeyError:
+                    style = Style.get_default()
+                finally:
+                    style.name = linesplit[3]
+            finally:
+                self.style = style
 
         return self
 
