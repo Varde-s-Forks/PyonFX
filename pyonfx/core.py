@@ -886,7 +886,7 @@ class Style(_DataCore):
         :return: ASS string
         """
         def fstr(v: float) -> str:
-            if v.is_integer():
+            if isinstance(v, int) or v.is_integer():
                 return str(int(v))
             return str(v)
         style = 'Style: '
