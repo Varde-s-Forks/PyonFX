@@ -862,7 +862,7 @@ class Style(_DataCore):
         scale_width = target_res_x / src_res_x
         scale_height = target_res_y / src_res_y
         old_ar = src_res_x / src_res_y
-        new_ar = target_res_y / target_res_y
+        new_ar = target_res_x / target_res_y
 
         horizontal_stretch = 1.0
         if abs(old_ar - new_ar) / new_ar > 0.01:
@@ -873,7 +873,7 @@ class Style(_DataCore):
         self.spacing *= scale_width
         self.margin_l = round(self.margin_l * scale_width)
         self.margin_r = round(self.margin_r * scale_width)
-        self.margin_v = round(self.margin_r * scale_height)
+        self.margin_v = round(self.margin_v * scale_height)
 
         if scaled_border_and_shadow:
             self.outline = round(self.outline * scale_height, 5)
