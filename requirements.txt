@@ -1,6 +1,6 @@
 loguru~=0.7.2
 more_itertools~=10.3.0
-numpy~=2.0.1
+numpy~=2.1.1
 pycairo~=1.26.1; sys_platform == "linux" or sys_platform == "darwin"
 PyGObject~=3.48.2; sys_platform == "linux" or sys_platform == "darwin"
 pywin32==306; sys_platform == "win32"
