@@ -55,8 +55,8 @@ class Coordinates(NamedMutableSequence[float], ABC, empty_slots=True):
     def __rmatmul__(self: _CT, _mat: SomeArrayLike) -> _CT:
         return self.__class__(*_get_matmul_func(_mat, self.__self_proxy[:len(_mat)]))
 
-    def __array__(self, dtype: Optional[DTypeLike] = None) -> NDArray[Any]:
-        return np.array(tuple(self), dtype)
+    def __array__(self, dtype: Optional[DTypeLike] = None, copy: bool | None = None) -> NDArray[Any]:
+        return np.array(tuple(self), dtype, copy=copy)
 
     def __neg__(self: _CT) -> _CT:
         return self.__class__(*[- a for a in self])
