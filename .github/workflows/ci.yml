@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-2022]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ['3.10', '3.11', '3.12']
 
     steps:
@@ -51,65 +51,70 @@ jobs:
       - name: Running mypy
         run: mypy pyonfx --python-version ${{ matrix.python-version }}
 
-      # - name: Cancelling pipeline (failed)
-      #   if: failure()
-      #   uses: andymckay/cancel-action@0.2
+      - name: Cancelling pipeline (failed)
+        if: failure()
+        uses: andymckay/cancel-action@0.5
 
-  # # Execute pytest to check PyonFX's functionalities
-  # test:
-  #   name: "Test (${{matrix.os}}, Python ${{ matrix.python-version }})"
-  #   runs-on: ${{matrix.os}}
-  #   strategy:
-  #     matrix:
-  #       os: [ubuntu-latest, macos-latest, windows-2022]
-  #       python-version: ['3.8','3.9', '3.10']
+  # Execute pytest to check PyonFX's functionalities
+  test:
+    name: "Test (${{matrix.os}}, Python ${{ matrix.python-version }})"
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ['3.10', '3.11', '3.12']
 
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Set up Python ${{ matrix.python-version }}
-  #       uses: actions/setup-python@v5
-  #       with:
-  #         python-version: ${{ matrix.python-version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
 
-  #     - name: Install platform-specific requirements (Ubuntu)
-  #       if: matrix.os == 'ubuntu-latest'
-  #       run: |
-  #         sudo apt-get update
-  #         sudo apt-get install libgirepository1.0-dev gcc libcairo2-dev pkg-config python3-dev gir1.2-gtk-3.0 python3-gi python3-gi-cairo
+      - name: Install platform-specific requirements (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install libgirepository1.0-dev gcc libcairo2-dev pkg-config python3-dev gir1.2-gtk-3.0 python3-gi python3-gi-cairo
 
-  #      # brew is very slow sometimes. TODO: speedup brew by using caching.
-  #     - name: Install platform-specific requirements (macOS)
-  #       if: matrix.os == 'macos-latest'
-  #       run: brew install python py3cairo pygobject3 pango
+       # brew is very slow sometimes. TODO: speedup brew by using caching.
+      - name: Install platform-specific requirements (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install python py3cairo pygobject3 pango
 
-  #     - name: Install fonts (non-Windows)
-  #       if: matrix.os != 'windows-2022'
-  #       run: |
-  #         GO111MODULE=on GOBIN=$HOME/.local/bin go install github.com/Crosse/font-install@v1.4.1
-  #         $HOME/.local/bin/font-install "https://osdn.net/frs/redir.php?m=gigenet&f=mix-mplus-ipa%2F58720%2Fmigu-1p-20130430.zip"
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.22
 
-  #       shell: bash
-  #     - name: Install fonts (Windows)
-  #       if: matrix.os == 'windows-2022'
-  #       run: ./.github/scripts/install-fonts.ps1 'https://osdn.net/frs/redir.php?m=gigenet&f=mix-mplus-ipa%2F58720%2Fmigu-1p-20130430.zip'
-  #       shell: pwsh
+      - name: Install fonts (non-Windows)
+        if: matrix.os != 'windows-latest'
+        run: |
+          go install github.com/Crosse/font-install@latest
+          font-install "https://github.com/itouhiro/mixfont-mplus-ipa/releases/download/v2020.0307/migu-1p-20200307.zip"
 
-  #     - name: Cache Python
-  #       uses: actions/cache@v4
-  #       if: matrix.os == 'macos-latest' || matrix.os == 'ubuntu-latest'
-  #       with:
-  #         path: ${{ env.pythonLocation }}
-  #         key: ${{matrix.os}}-${{matrix.python-version}}-${{ hashFiles('setup.py') }}-${{ hashFiles('requirements.txt') }}
+        shell: bash
+      - name: Install fonts (Windows)
+        if: matrix.os == 'windows-latest'
+        run: ./.github/scripts/install-fonts.ps1 'https://github.com/itouhiro/mixfont-mplus-ipa/releases/download/v2020.0307/migu-1p-20200307.zip'
+        shell: pwsh
 
-  #     - name: Install Python requirements
-  #       run: |
-  #         python3 -m pip install --upgrade pip
-  #         pip install -r requirements.txt
-  #         pip install -r requirements-dev.txt
+      - name: Cache Python
+        uses: actions/cache@v4
+        if: matrix.os == 'macos-latest' || matrix.os == 'ubuntu-latest'
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{matrix.os}}-${{matrix.python-version}}-${{ hashFiles('setup.py') }}-${{ hashFiles('requirements.txt') }}
 
-  #     - name: Test
-  #       run: PANGOCAIRO_BACKEND=fc pytest
-  #       shell: bash
+      - name: Install Python requirements
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Test
+        run: PANGOCAIRO_BACKEND=fc pytest
+        shell: bash
 
   # # Build the package and publish it on PyPi
   # build-n-publish:
