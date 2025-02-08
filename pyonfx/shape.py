@@ -1223,7 +1223,7 @@ class Shape(_AbstractShape):
         )
         # Return all those pixels
         return [
-            Pixel(PointCartesian2D(x - shiftp.x, y - shiftp.y), Opacity(alpha / 255))
+            Pixel(PointCartesian2D(x - shiftp.x, y - shiftp.y), Opacity(float(alpha) / 255))
             for y, row in enumerate(image)
             for x, alpha in enumerate(row)
             if alpha > 0
