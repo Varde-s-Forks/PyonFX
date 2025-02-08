@@ -1105,7 +1105,7 @@ class Shape(_AbstractShape):
 
         DC, DP = DrawingCommand, DrawingProp
         cmds: List[DrawingCommand] = []
-        draws = cast(List[str], re.findall(r'[mnlpbsc][^mnlpbsc]+', drawing_cmds))
+        draws = cast(List[str], re.findall(r'[mnlpbsc][^mnlpbsc]*(?=[mnlpbsc]|$)', drawing_cmds))
 
         # if sys.version_info <= (3, 10):
         #     ...
