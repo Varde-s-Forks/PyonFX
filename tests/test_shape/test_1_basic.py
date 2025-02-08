@@ -22,14 +22,14 @@ def test_init() -> None:
         DC(DP.CUBIC_BÉZIER_CURVE, PC2D(x=206.67, y=1994.67), PC2D(x=449.33, y=2018.67), PC2D(x=3672.0, y=1469.33)),
     ])
     dest = 'm 400 1664 l 826.67 1453.33 2437.33 930.67 2216 440 2850.67 1530.67 1712 141.33 b 851.33 -12 156.67 905.33 136 381.33 206.67 1994.67 449.33 2018.67 3672 1469.33 '
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_round0() -> None:
     original = Shape.from_ass_string("m 0.5 0.4 l 20.5 0.6 20.7 10.1 0.6 10.4")
     dest = Shape.from_ass_string("m 0 0 l 20 1 21 10 1 10")
     original.round(0)
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_map1() -> None:
@@ -46,7 +46,7 @@ def test_map1() -> None:
         return p
     original.map(_func)
     original.round()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 # TODO: More map
@@ -56,7 +56,7 @@ def test_move1() -> None:
     original = Shape.from_ass_string("m 0 0 l 20 0 20 10 0 10")
     dest = Shape.from_ass_string("m 10 5 l 30 5 30 15 10 15")
     original.move(10, 5)
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_move2() -> None:
@@ -64,24 +64,30 @@ def test_move2() -> None:
     dest = Shape.from_ass_string("m 3651.045 -776558.141 l 346.402 -777650.642 82.149 -773996.299 1206.829 -776454.809 2702.62 -775579.973 -104.171 -774728.464 -2743.949 -779554.383")
     original.move(math.pi * 80 / 1.5 ** 7, -777777.77777)
     original.round()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_scale1() -> None:
     original = Shape.from_ass_string("m -100.5 0 l 100 0 b 100 100 -100 100 -100.5 0 c")
     dest = Shape.from_ass_string("m -10.05 0 l 10 0 b 10 200 -10 200 -10.05 0 c")
     original.scale(1 / 10, 2)
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_bounding1() -> None:
     original = Shape.from_ass_string("m -100.5 0 l 100 0 b 100 100 -100 100 -100.5 0 c")
-    check.equal(original.bounding, (PC2D(-100.5, 0), PC2D(100, 100)))
+    check.equal(
+        tuple(tuple(p) for p in original.bounding),
+        tuple(tuple(p) for p in (PC2D(-100.5, 0), PC2D(100, 100)))
+    )
 
 
 def test_bounding2() -> None:
     original = Shape.from_ass_string("m 0 0 l 20 0 20 10 0 10")
-    check.equal(original.bounding, (PC2D(0.0, 0.0), PC2D(20.0, 10.0)))
+    check.equal(
+        tuple(tuple(p) for p in original.bounding),
+        tuple(tuple(p) for p in (PC2D(0.0, 0.0), PC2D(20.0, 10.0)))
+    )
 
 
 def test_align1() -> None:
@@ -89,7 +95,7 @@ def test_align1() -> None:
     dest = Shape.from_ass_string('m 0 -293.34 l 8 -18.67 829.33 0 768 -218.67 581.33 -296 280 -98.67')
     original.align(1)
     original.round()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_align2() -> None:
@@ -97,7 +103,7 @@ def test_align2() -> None:
     dest = Shape.from_ass_string('m -414.665 -293.34 l -406.665 -18.67 414.665 0 353.335 -218.67 166.665 -296 -134.665 -98.67')
     original.align(2)
     original.round()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_align3() -> None:
@@ -105,7 +111,7 @@ def test_align3() -> None:
     dest = Shape.from_ass_string('m -829.33 -293.34 l -821.33 -18.67 0 0 -61.33 -218.67 -248 -296 -549.33 -98.67')
     original.align(3)
     original.round()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_align4() -> None:
@@ -113,7 +119,7 @@ def test_align4() -> None:
     dest = Shape.from_ass_string('m 0 -145.34 l 8 129.33 829.33 148 768 -70.67 581.33 -148 280 49.33')
     original.align(4)
     original.round()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_align5() -> None:
@@ -121,7 +127,7 @@ def test_align5() -> None:
     dest = Shape.from_ass_string('m -414.665 -145.34 l -406.665 129.33 414.665 148 353.335 -70.67 166.665 -148 -134.665 49.33')
     original.align(5)
     original.round()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_align6() -> None:
@@ -129,7 +135,7 @@ def test_align6() -> None:
     dest = Shape.from_ass_string('m -829.33 -145.34 l -821.33 129.33 0 148 -61.33 -70.67 -248 -148 -549.33 49.33')
     original.align(6)
     original.round()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_align7() -> None:
@@ -137,7 +143,7 @@ def test_align7() -> None:
     dest = Shape.from_ass_string('m 0 2.66 l 8 277.33 829.33 296 768 77.33 581.33 0 280 197.33')
     original.align(7)
     original.round()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_align8() -> None:
@@ -145,7 +151,7 @@ def test_align8() -> None:
     dest = Shape.from_ass_string('m -414.665 2.66 l -406.665 277.33 414.665 296 353.335 77.33 166.665 0 -134.665 197.33')
     original.align(8)
     original.round()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_align9() -> None:
@@ -153,7 +159,7 @@ def test_align9() -> None:
     dest = Shape.from_ass_string('m -829.33 2.66 l -821.33 277.33 0 296 -61.33 77.33 -248 0 -549.33 197.33')
     original.align(9)
     original.round()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_rotate_x() -> None:
@@ -161,7 +167,7 @@ def test_rotate_x() -> None:
     dest = Shape.from_ass_string('m 182.416 -371.715 l 0 0 1666.523 -26.5 655.346 -313.582')
     original.rotate(20.99, CartesianAxis.X)
     original.round()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_rotate_y() -> None:
@@ -169,7 +175,7 @@ def test_rotate_y() -> None:
     dest = Shape.from_ass_string('m 363.098 -794.516 l 0 0 2838.969 -48.477 1408.124 -723.524')
     original.rotate(-4.1, CartesianAxis.Y)
     original.round()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_rotate_z() -> None:
@@ -177,7 +183,7 @@ def test_rotate_z() -> None:
     dest = Shape.from_ass_string('m 518.679 -617.783 l 0 0 1668.6 429.176 1173.534 -243.784')
     original.rotate(15.4, CartesianAxis.Z)
     original.round()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_shear1() -> None:
@@ -185,7 +191,7 @@ def test_shear1() -> None:
     dest = Shape.from_ass_string('m 1315.2 940.8 l 2276.8 1624 2650.4 874.4 3360.8 1544 3407.2 796 3807.2 1400 3559.2 355.2 b 3144.6 189.6 2872.6 472 3131.2 851.2 2923.1 490.4 2610.9 386.4 2292.4 467.2 2300.8 844 2387.2 1182.4 2201.6 1256 2023.9 1358.8 1586.5 418 1215.2 459.2')
     original.shear(0.7, -0.2)
     original.round()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_shear2() -> None:
@@ -193,32 +199,33 @@ def test_shear2() -> None:
     dest = Shape.from_ass_string('m 468.57 518.85 l 1213.71 813.72 820.55 1106.26 1366.87 1622.84 598.84 1517.71 578.3 1327.99 957.71 1444.55 566.84 1053.71 923.42 795.44 496 656')
     original.shear(4, 5)
     original.round()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_close1() -> None:
     original = Shape.from_ass_string('m 168 732 l 260 1440 872 916 512 984')
     dest = Shape.from_ass_string('m 168 732 l 260 1440 872 916 512 984 168 732')
     original.close()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_close2() -> None:
     original = Shape.from_ass_string('m 168 732 l 260 1440 872 916 512 984 168 732')
     dest = Shape.from_ass_string('m 168 732 l 260 1440 872 916 512 984 168 732')
+    assert 0
     original.close()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_unclose1() -> None:
     original = Shape.from_ass_string('m 168 732 l 260 1440 872 916 512 984')
     dest = Shape.from_ass_string('m 168 732 l 260 1440 872 916 512 984')
     original.close()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_unclose2() -> None:
     original = Shape.from_ass_string('m 168 732 l 260 1440 872 916 512 984 168 732')
     dest = Shape.from_ass_string('m 168 732 l 260 1440 872 916 512 984')
     original.close()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
