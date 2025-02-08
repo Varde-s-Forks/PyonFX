@@ -11,7 +11,7 @@ def test_split_lines1() -> None:
     )
     original.split_lines()
     original.round()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_split_lines2() -> None:
@@ -23,7 +23,7 @@ def test_split_lines2() -> None:
     )
     original.split_lines()
     original.round()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_split_lines3() -> None:
@@ -33,4 +33,4 @@ def test_split_lines3() -> None:
     )
     original.split_lines()
     original.round()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))

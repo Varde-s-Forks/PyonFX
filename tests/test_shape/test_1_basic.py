@@ -212,7 +212,6 @@ def test_close1() -> None:
 def test_close2() -> None:
     original = Shape.from_ass_string('m 168 732 l 260 1440 872 916 512 984 168 732')
     dest = Shape.from_ass_string('m 168 732 l 260 1440 872 916 512 984 168 732')
-    assert 0
     original.close()
     check.equal(str(original), str(dest))
 

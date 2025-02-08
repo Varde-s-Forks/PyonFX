@@ -14,7 +14,7 @@ def test_to_outline_miter() -> None:
     original = Shape(ORIGINAL)
     original.to_outline(5.45, 3.78, OutlineMode.MITER)
     original.round()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_to_outline_bevel() -> None:
@@ -25,7 +25,7 @@ def test_to_outline_bevel() -> None:
     original = Shape(ORIGINAL)
     original.to_outline(1.4, 1.8, OutlineMode.BEVEL)
     original.round()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))
 
 
 def test_to_outline_round() -> None:
@@ -36,4 +36,4 @@ def test_to_outline_round() -> None:
     original = Shape(ORIGINAL)
     original.to_outline(15.1, mode=OutlineMode.ROUND)
     original.round()
-    check.equal(original, dest)
+    check.equal(str(original), str(dest))

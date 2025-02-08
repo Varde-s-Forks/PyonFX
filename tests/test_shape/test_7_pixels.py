@@ -12,6 +12,6 @@ def test_to_pixels() -> None:
     ]
 
     for op, dp in zip(original.to_pixels(), dest):
-        check.equal(op.pos, dp.pos)
+        check.equal(tuple(op.pos), tuple(dp.pos))
         check.almost_equal(op.opacity, op.opacity, abs=1e-9)
         check.equal(op.colour, dp.colour)
