@@ -71,6 +71,11 @@ class Coordinates(NamedMutableSequence[float], ABC, empty_slots=True):
         for attr, value in zip(self.__slots__, (func(x) for x in self)):
             setattr(self, attr, value)
 
+    def __eq__(self, __o: object) -> bool:
+        if not isinstance(__o, Coordinates):
+            return NotImplemented
+        return __o._asdict() == self._asdict()
+
     def round(self, ndigits: int = 3) -> None:
         """
         Round the Point to a given precision in decimal digits.
