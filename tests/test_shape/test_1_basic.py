@@ -219,12 +219,12 @@ def test_close2() -> None:
 def test_unclose1() -> None:
     original = Shape.from_ass_string('m 168 732 l 260 1440 872 916 512 984')
     dest = Shape.from_ass_string('m 168 732 l 260 1440 872 916 512 984')
-    original.close()
+    original.unclose()
     check.equal(str(original), str(dest))
 
 
 def test_unclose2() -> None:
     original = Shape.from_ass_string('m 168 732 l 260 1440 872 916 512 984 168 732')
     dest = Shape.from_ass_string('m 168 732 l 260 1440 872 916 512 984')
-    original.close()
+    original.unclose()
     check.equal(str(original), str(dest))

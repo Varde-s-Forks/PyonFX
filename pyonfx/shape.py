@@ -715,7 +715,7 @@ class Shape(_AbstractShape):
                 )
                 ncmds.extend(splitted_cmds)
             else:
-                raise NotImplementedError(f'{self.__class__.__name__}: drawing property not recognised!')
+                raise NotImplementedError(f'{self.__class__.__name__}: drawing property not recognised! "{cmd0._prop}"')
 
         ncmds.reverse()
         self._commands = ncmds
