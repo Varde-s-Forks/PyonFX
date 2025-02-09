@@ -4,5 +4,5 @@ loguru-mypy~=0.0.4
 pytest~=8.3.4
 pytest_check~=2.4.1
 sphinx-panels~=0.6.0
-sphinx-rtd-theme~=1.2.0
+sphinx-rtd-theme~=3.0.2
 pywin32-stubs~=1.0.7; sys_platform == "win32"
