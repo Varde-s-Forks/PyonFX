@@ -1,6 +1,6 @@
 
 from functools import cached_property, lru_cache
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any
 
 import win32con
 import win32gui
@@ -22,7 +22,7 @@ from ._abstract import _AbstractFont, _Metrics, _TextExtents
 
 
 class Font(_AbstractFont):
-    _metrics: Dict[str, float]
+    _metrics: dict[str, float]
 
     pycfont: PyCFont
 
@@ -35,7 +35,7 @@ class Font(_AbstractFont):
         # Set context backgrounds to transparent
         win32gui.SetBkMode(self.dc, win32con.TRANSPARENT)
         # Create font handle
-        font_spec: Dict[str, Any] = {
+        font_spec: dict[str, Any] = {
             "height": int(self.style.fontsize * self.upscale),
             "width": 0,
             "escapement": 0,
@@ -107,7 +107,7 @@ class Font(_AbstractFont):
         PT_CLOSE = win32con.PT_CLOSEFIGURE
         PT_LINE_OR_CLOSE, PT_BÉZIER_OR_CLOSE = PT_LINE | PT_CLOSE, PT_BÉZIER | PT_CLOSE
 
-        cmds: List[DrawingCommand] = []
+        cmds: list[DrawingCommand] = []
         DC, DP = DrawingCommand, DrawingProp
         m, l, b = DP.MOVE, DP.LINE, DP.BÉZIER
 

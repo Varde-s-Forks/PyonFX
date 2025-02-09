@@ -1,7 +1,7 @@
 
 import html
 from functools import cached_property, lru_cache
-from typing import TYPE_CHECKING, Any, List
+from typing import TYPE_CHECKING, Any
 
 import cairo  # type: ignore
 import gi  # type: ignore
@@ -114,7 +114,7 @@ class Font(_AbstractFont):
         if not text:
             raise ValueError(f'{self.__class__.__name__}: Text is empty!')
         curr_width = 0.
-        cmds: List[DrawingCommand] = []
+        cmds: list[DrawingCommand] = []
         DC, DP = DrawingCommand, DrawingProp
         m, l, b = DP.MOVE, DP.LINE, DP.BÉZIER
 

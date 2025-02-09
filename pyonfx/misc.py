@@ -3,7 +3,7 @@
 __all__ = ['clamp_value', 'chunk']
 
 from itertools import islice
-from typing import Iterable, Iterator, Literal, Tuple, overload
+from typing import Iterable, Iterator, Literal, overload
 
 import math
 import numpy as np
@@ -25,16 +25,16 @@ def clamp_value(val: Nb, min_val: Nb, max_val: Nb) -> Nb:
 
 
 @overload
-def chunk(iterable: Iterable[T_co], size: Literal[2] = 2) -> Iterator[Tuple[T_co, T_co]]:
+def chunk(iterable: Iterable[T_co], size: Literal[2] = 2) -> Iterator[tuple[T_co, T_co]]:
     ...
 
 
 @overload
-def chunk(iterable: Iterable[T_co], size: Literal[3]) -> Iterator[Tuple[T_co, T_co, T_co]]:
+def chunk(iterable: Iterable[T_co], size: Literal[3]) -> Iterator[tuple[T_co, T_co, T_co]]:
     ...
 
 
-def chunk(iterable: Iterable[T_co], size: int = 2) -> Iterator[Tuple[T_co, ...]]:  # type: ignore
+def chunk(iterable: Iterable[T_co], size: int = 2) -> Iterator[tuple[T_co, ...]]:  # type: ignore
     """
     Split an iterable of arbitrary length into equal size chunks
 

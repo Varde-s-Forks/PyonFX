@@ -4,7 +4,7 @@ from __future__ import annotations
 from functools import reduce
 from itertools import chain
 from math import asin, ceil, comb, cos, degrees, dist, fsum, inf, radians, sin, sqrt
-from typing import Any, Iterable, List, Optional, Sequence, Tuple, TypeVar, overload
+from typing import Any, Iterable, Sequence, Tuple, TypeVar, overload
 
 from .._logging import logger
 from ..misc import chunk, clamp_value, frange
@@ -36,8 +36,8 @@ _PolarT = TypeVar('_PolarT', bound=Polar)
 _CylindricalT = TypeVar('_CylindricalT', bound=Cylindrical)
 _SphericalT = TypeVar('_SphericalT', bound=Spherical)
 
-_BézierCurve = Tuple[PointCartesian2D, PointCartesian2D, PointCartesian2D, PointCartesian2D]
-_AssBézierCurve = Tuple[PointCartesian2D, PointCartesian2D, PointCartesian2D]
+_BézierCurve = tuple[PointCartesian2D, PointCartesian2D, PointCartesian2D, PointCartesian2D]
+_AssBézierCurve = tuple[PointCartesian2D, PointCartesian2D, PointCartesian2D]
 
 
 class Geometry:
@@ -46,7 +46,7 @@ class Geometry:
 
     @overload
     @staticmethod
-    def rotate(_o: _Cartesian2DT, /, rot: float, axis: None, zp: Tuple[float, ...]) -> _Cartesian2DT:
+    def rotate(_o: _Cartesian2DT, /, rot: float, axis: None, zp: tuple[float, ...]) -> _Cartesian2DT:
         """
         Rotate given Cartesian2D Point or Vector in given rotation
 
@@ -59,7 +59,7 @@ class Geometry:
 
     @overload
     @staticmethod
-    def rotate(_o: _Cartesian3DT, /, rot: float, axis: Axis, zp: Tuple[float, ...]) -> _Cartesian3DT:
+    def rotate(_o: _Cartesian3DT, /, rot: float, axis: Axis, zp: tuple[float, ...]) -> _Cartesian3DT:
         """
         Rotate given Cartesian3D Point or Vector in given rotation in a given axis
 
@@ -110,7 +110,7 @@ class Geometry:
 
     @overload
     @staticmethod
-    def rotate(_o: PointT, /, rot: float, axis: Axis, zp: Optional[Tuple[float, ...]]) -> PointT:
+    def rotate(_o: PointT, /, rot: float, axis: Axis, zp: tuple[float, ...] | None) -> PointT:
         ...
 
     @staticmethod
@@ -442,7 +442,7 @@ class Geometry:
         return PointCartesian2D(ix, iy)
 
     @staticmethod
-    def split_line(p0: PointCartesian2D, p1: PointCartesian2D, max_length: float) -> List[PointCartesian2D]:
+    def split_line(p0: PointCartesian2D, p1: PointCartesian2D, max_length: float) -> list[PointCartesian2D]:
         """
         Split a line (p0, p1) in cartesian system into shorter lines with maximum max_length
 
@@ -451,7 +451,7 @@ class Geometry:
         :param max_length:  Maximum length
         :return:            List of new points
         """
-        ncoord: List[PointCartesian2D] = []
+        ncoord: list[PointCartesian2D] = []
         distance = dist(p0, p1)
         if distance > max_length:
             # Equal step between the two points instead of having all points to max_length
@@ -467,7 +467,7 @@ class Geometry:
         return ncoord
 
     @classmethod
-    def curve4_to_lines(cls, b_coord: _BézierCurve, tolerance: float, /) -> List[PointCartesian2D]:
+    def curve4_to_lines(cls, b_coord: _BézierCurve, tolerance: float, /) -> list[PointCartesian2D]:
         """
         Convert 4th degree curve to line points
 
@@ -478,10 +478,10 @@ class Geometry:
         P = PointCartesian2D
         V = VectorCartesian2D
 
-        ncoord: List[PointCartesian2D] = []
+        ncoord: list[PointCartesian2D] = []
         tolerance = radians(tolerance)
 
-        def _curve4_subdivide(b_coord: _BézierCurve, /) -> Tuple[_BézierCurve, _BézierCurve]:
+        def _curve4_subdivide(b_coord: _BézierCurve, /) -> tuple[_BézierCurve, _BézierCurve]:
             """4th degree curve subdivider (De Casteljau)"""
             # Calculate points on curve vectors
             lcoord = list(chain.from_iterable(b_coord))
@@ -576,7 +576,7 @@ class Geometry:
         cls,
         p0: PointCartesian2D, p1: PointCartesian2D, p2: PointCartesian2D,
         deviation: float, tolerance: float = 157.5, tension: float = 0.5
-    ) -> List[PointCartesian2D]:
+    ) -> list[PointCartesian2D]:
         """
         Round vertex in a cubic bézier curve
 
@@ -610,7 +610,7 @@ class Geometry:
     @staticmethod
     def make_ellipse(
         w: float, h: float,
-        c_xy: Tuple[float, float] = (0., 0.), /, clockwise: bool = True
+        c_xy: tuple[float, float] = (0., 0.), /, clockwise: bool = True
     ) -> Tuple[
         PointCartesian2D,
         _AssBézierCurve, _AssBézierCurve, _AssBézierCurve, _AssBézierCurve
@@ -655,8 +655,8 @@ class Geometry:
     @staticmethod
     def make_parallelogram(
         w: float, h: float, angle: float,
-        c_xy: Tuple[float, float] = (0., 0.), /, clockwise: bool = True
-    ) -> Tuple[PointCartesian2D, PointCartesian2D, PointCartesian2D, PointCartesian2D, PointCartesian2D]:
+        c_xy: tuple[float, float] = (0., 0.), /, clockwise: bool = True
+    ) -> tuple[PointCartesian2D, PointCartesian2D, PointCartesian2D, PointCartesian2D, PointCartesian2D]:
         """
         Make parallelogram coordinates with given width, height and angle, centered around (c_xy)
 
@@ -690,9 +690,9 @@ class Geometry:
     @logger.catch(force_exit=True)
     def make_triangle(
         cls,
-        side: float | Tuple[float, float], angle: Tuple[float, float] | float,
-        c_xy: Tuple[float, float] = (0., 0.), /, clockwise: bool = True
-    ) -> Tuple[PointCartesian2D, PointCartesian2D, PointCartesian2D, PointCartesian2D]:
+        side: float | tuple[float, float], angle: tuple[float, float] | float,
+        c_xy: tuple[float, float] = (0., 0.), /, clockwise: bool = True
+    ) -> tuple[PointCartesian2D, PointCartesian2D, PointCartesian2D, PointCartesian2D]:
         """
         Make general triangle coordinates with given sides and angles, centered around (c_xy)
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 __all__ = ['Image']
 
 from pathlib import Path
-from typing import List, NoReturn
+from typing import NoReturn
 
 from ._logging import logger
 from .colourspace import ASSColor, Opacity
@@ -22,7 +22,7 @@ class Image:
     def to_ass(self) -> NoReturn:
         raise NotImplementedError
 
-    def to_pixels(self) -> List[Pixel]:
+    def to_pixels(self) -> list[Pixel]:
         """
         Convert current image file to a list of Pixel
         It is strongly recommended to create a dedicated style for pixels,

@@ -7,8 +7,8 @@ from functools import _lru_cache_wrapper, wraps
 from os import PathLike
 from types import FunctionType, MemberDescriptorType, MethodType
 from typing import (
-    AbstractSet, Any, Callable, Collection, Dict, Generic, Iterable, Iterator, Literal,
-    MutableMapping, MutableSet, NamedTuple, Reversible, Sequence, Tuple, TypeVar, Union, cast,
+    AbstractSet, Any, Callable, Collection, Generic, Iterable, Iterator, Literal,
+    MutableMapping, MutableSet, NamedTuple, Reversible, Sequence, TypeVar, Union, cast,
     final, get_args, get_origin, overload
 )
 
@@ -24,9 +24,9 @@ TCV_co = TypeVar('TCV_co', bound=Union[float, int, str], covariant=True)  # Type
 TCV_inv = TypeVar('TCV_inv', bound=Union[float, int, str])  # Type Color Value invariant
 ACV = Union[float, int, str]
 Nb = TypeVar('Nb', bound=Union[float, int])  # Number
-Tup3 = Tuple[Nb, Nb, Nb]
-Tup4 = Tuple[Nb, Nb, Nb, Nb]
-Tup3Str = Tuple[str, str, str]
+Tup3 = tuple[Nb, Nb, Nb]
+Tup4 = tuple[Nb, Nb, Nb, Nb]
+Tup3Str = tuple[str, str, str]
 AnyPath = Union[PathLike[str], str]
 SomeArrayLike = Union[Sequence[float], NDArray[Any]]
 
@@ -119,11 +119,11 @@ class View(Reversible[T], Collection[T]):
 
 class AutoSlotsMeta(ABCMeta):
     @classmethod
-    def __prepare__(cls, __name: str, __bases: Tuple[type, ...], **kwargs: Any) -> MutableMapping[str, object]:
+    def __prepare__(cls, __name: str, __bases: tuple[type, ...], **kwargs: Any) -> MutableMapping[str, object]:
         return {'__slots__': (), '__slots_ex__': ()}
 
     def __new__(
-        cls, name: str, bases: Tuple[type, ...], namespace: Dict[str, Any],
+        cls, name: str, bases: tuple[type, ...], namespace: dict[str, Any],
         empty_slots: bool = False, slots_ex: bool = False,
         slots_ex_exclude: str | tuple[str, ...] | None = None,
         **kwargs: Any
@@ -170,11 +170,11 @@ class AutoSlotsMeta(ABCMeta):
 
 
 class AutoSlots(ABC, empty_slots=True, metaclass=AutoSlotsMeta):
-    __slots__: Tuple[str, ...]
-    __slots_ex__: Tuple[str, ...]
+    __slots__: tuple[str, ...]
+    __slots_ex__: tuple[str, ...]
 
     @property
-    def __all_slots__(self) -> Tuple[str, ...]:
+    def __all_slots__(self) -> tuple[str, ...]:
         return tuple(OrderedSet(self.__slots__ + self.__slots_ex__))
 
     def __delattrs__(self) -> None:
@@ -211,10 +211,10 @@ class NamedMutableSequence(AutoSlots, Sequence[T_co], Generic[T_co], ABC, empty_
         ...
 
     @overload
-    def __getitem__(self, index: slice) -> Tuple[T_co, ...]:
+    def __getitem__(self, index: slice) -> tuple[T_co, ...]:
         ...
 
-    def __getitem__(self, index: int | slice) -> T_co | Tuple[T_co, ...]:
+    def __getitem__(self, index: int | slice) -> T_co | tuple[T_co, ...]:
         if isinstance(index, slice):
             return tuple(
                 self.__getattribute__(self.__slots__[i])
@@ -228,7 +228,7 @@ class NamedMutableSequence(AutoSlots, Sequence[T_co], Generic[T_co], ABC, empty_
     def __len__(self) -> int:
         return self.__slots__.__len__()
 
-    def _asdict(self) -> Dict[str, T_co]:
+    def _asdict(self) -> dict[str, T_co]:
         return {k: v for k, v in zip(self.__slots__, self)}
 
 

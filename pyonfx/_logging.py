@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-__all__: List[str] = []
+__all__: list[str] = []
 
 import sys
 from abc import ABC, ABCMeta
 from enum import IntEnum
 from threading import Lock
-from typing import Any, Callable, Dict, List, NoReturn, TypeVar, overload
+from typing import Any, Callable, NoReturn, TypeVar, overload
 
 import loguru
 
@@ -40,7 +40,7 @@ def _loguru_format(record: loguru.Record) -> str:
 
 
 class SingletonMeta(ABCMeta):
-    _instances: Dict[object, Any] = {}
+    _instances: dict[object, Any] = {}
     _lock: Lock = Lock()
 
     def __call__(cls, *args: Any, **kwargs: Any) -> Any:

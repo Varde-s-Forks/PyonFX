@@ -1,9 +1,9 @@
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
-from setuptools import setup
+from setuptools import setup  # type: ignore[import-untyped]
 
-meta: Dict[str, Any] = {}
+meta: dict[str, Any] = {}
 
 exec(Path('pyonfx/_metadata.py').read_text(), meta := dict[str, str]())
 

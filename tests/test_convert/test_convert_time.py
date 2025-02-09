@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from functools import cached_property
 from pathlib import Path
-from typing import List, NamedTuple
+from typing import NamedTuple
 
 import pytest
 import pytest_check as check
@@ -22,7 +22,7 @@ class _Time(NamedTuple):
 @pytest.mark.skip
 class _Process:
     io: AssUntitled
-    times: List[_Time]
+    times: list[_Time]
 
     def __init__(self) -> None:
         self.io = AssUntitled(fps=FPS)
@@ -33,14 +33,14 @@ class _Process:
         self.times = [_Time(*t.split(',')) for t in times if t]
 
     @cached_property
-    def originals(self) -> List[str]:
+    def originals(self) -> list[str]:
         return [
             f'Dialogue: 0,{t.start},{t.end},Default,,0,0,0,,'
             for t in self.times
         ][:20]
 
     @cached_property
-    def processed(self) -> List[Line]:
+    def processed(self) -> list[Line]:
         return [
             Line.from_text(
                 f'Dialogue: 0,{t.start},{t.end},Default,,0,0,0,,',

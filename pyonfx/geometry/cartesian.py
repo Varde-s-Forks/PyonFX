@@ -2,7 +2,6 @@
 
 from abc import ABC
 from math import cos, radians, sin
-from typing import Tuple
 
 import numpy as np
 from numpy.typing import NDArray
@@ -37,7 +36,7 @@ class Cartesian2D(Coordinates, ABC, empty_slots=True):
         # Faster access than using super()
         NamedMutableSequence.__init__(self, x=x, y=y)
 
-    def __rotate__(self, rot: float, axis: CartesianAxis = CartesianAxis.Z, zp: Tuple[float, ...] = (0., 0.)) -> None:
+    def __rotate__(self, rot: float, axis: CartesianAxis = CartesianAxis.Z, zp: tuple[float, ...] = (0., 0.)) -> None:
         """
         Rotate on an imaginary Z-axis
 
@@ -68,7 +67,7 @@ class Cartesian3D(Cartesian2D, ABC, empty_slots=True):
         # Faster access than using super()
         NamedMutableSequence.__init__(self, x=x, y=y, z=z)
 
-    def __rotate__(self, rot: float, axis: CartesianAxis = CartesianAxis.Z, zp: Tuple[float, ...] = (0., 0., 0.)) -> None:
+    def __rotate__(self, rot: float, axis: CartesianAxis = CartesianAxis.Z, zp: tuple[float, ...] = (0., 0., 0.)) -> None:
         """
         Rotate on given axis
 

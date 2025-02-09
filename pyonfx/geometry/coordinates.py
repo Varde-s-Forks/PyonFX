@@ -5,7 +5,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from enum import IntEnum
 from math import ceil, floor, trunc
-from typing import Any, Callable, NoReturn, Optional, Tuple, TypeVar
+from typing import Any, Callable, NoReturn, TypeVar
 
 import numpy as np
 from numpy.typing import DTypeLike, NDArray
@@ -27,26 +27,26 @@ class Coordinates(NamedMutableSequence[float], ABC, empty_slots=True):
     def __self_proxy(self) -> Coordinates:
         return self
 
-    def __add__(self: _CT, _p: Tuple[float, ...]) -> _CT:
+    def __add__(self: _CT, _p: tuple[float, ...]) -> _CT:
         return self.__class__(*[sum(r, 0.0) for r in zip(self.__self_proxy, _p)])
 
-    def __radd__(self: _CT, _p: Tuple[float, ...]) -> _CT:
+    def __radd__(self: _CT, _p: tuple[float, ...]) -> _CT:
         return self.__add__(_p)
 
-    def __sub__(self: _CT, _p: Tuple[float, ...]) -> _CT:
+    def __sub__(self: _CT, _p: tuple[float, ...]) -> _CT:
         return self.__class__(*[c0 - c1 for (c0, c1) in zip(self.__self_proxy, _p)])
 
-    def __rsub__(self: _CT, _p: Tuple[float, ...]) -> _CT:
+    def __rsub__(self: _CT, _p: tuple[float, ...]) -> _CT:
         return self.__class__(*[c1 - c0 for (c0, c1) in zip(self.__self_proxy, _p)])
 
-    def __mul__(self: _CT, _p: int | Tuple[float, ...]) -> _CT:
+    def __mul__(self: _CT, _p: int | tuple[float, ...]) -> _CT:
         if isinstance(_p, int):
             nattrs = [getattr(self, attr) * _p for attr in self.__slots__]
         else:
             nattrs = [c0 * c1 for (c0, c1) in zip(self.__self_proxy, _p)]
         return self.__class__(*nattrs)
 
-    def __rmul__(self: _CT, _p: int | Tuple[float, ...]) -> _CT:
+    def __rmul__(self: _CT, _p: int | tuple[float, ...]) -> _CT:
         return self.__mul__(_p)
 
     def __matmul__(self: _CT, _mat: SomeArrayLike) -> _CT:
@@ -55,7 +55,7 @@ class Coordinates(NamedMutableSequence[float], ABC, empty_slots=True):
     def __rmatmul__(self: _CT, _mat: SomeArrayLike) -> _CT:
         return self.__class__(*_get_matmul_func(_mat, self.__self_proxy[:len(_mat)]))
 
-    def __array__(self, dtype: Optional[DTypeLike] = None, copy: bool | None = None) -> NDArray[Any]:
+    def __array__(self, dtype: DTypeLike | None = None, copy: bool | None = None) -> NDArray[Any]:
         return np.array(tuple(self), dtype, copy=copy)
 
     def __neg__(self: _CT) -> _CT:

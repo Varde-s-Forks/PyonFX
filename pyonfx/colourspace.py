@@ -13,7 +13,7 @@ __all__ = [
 
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Tuple, Type, TypeVar, cast, overload
+from typing import Any, TypeVar, cast, overload
 
 from typing_extensions import TypeGuard
 
@@ -72,7 +72,7 @@ class ColourSpace(NamedMutableSequence[TCV_co], ABC, empty_slots=True):
         ...
 
     @abstractmethod
-    def to_rgb(self, rgb_type: Type[_RGB_T], /) -> _RGB_T:
+    def to_rgb(self, rgb_type: type[_RGB_T], /) -> _RGB_T:
         """
         Convert current object to an RGB type object
 
@@ -188,10 +188,10 @@ class _NumBased(ColourSpace[Nb], ABC, empty_slots=True):
 class _ForceNumber(_NumBased[Nb], ABC, empty_slots=True):
     """Base class for clamping and forcing type values"""
 
-    peaks: Tuple[Nb, Nb]
+    peaks: tuple[Nb, Nb]
     """Max value allowed"""
 
-    force_type: Type[Nb]
+    force_type: type[Nb]
     """Forcing type"""
 
     # TODO: Maybe yeet __setattr__ and __delattr__ since they're very slow
@@ -217,7 +217,7 @@ class _ForceNumber(_NumBased[Nb], ABC, empty_slots=True):
 class _ForceFloat(_ForceNumber[float], ABC, empty_slots=True):
     """Force values to float and clamp in the range peaks"""
 
-    force_type: Type[float] = float
+    force_type: type[float] = float
 
     def round(self, ndigits: int) -> None:
         """
@@ -231,7 +231,7 @@ class _ForceFloat(_ForceNumber[float], ABC, empty_slots=True):
 
 class _ForceInt(_ForceNumber[int], ABC, empty_slots=True):
     """Force values to int (truncate them if necessary) and clamp in the range peaks"""
-    force_type: Type[int] = int
+    force_type: type[int] = int
 
 
 class _BaseRGB(ColourSpace[Nb], ABC, empty_slots=True):
@@ -243,18 +243,18 @@ class _BaseRGB(ColourSpace[Nb], ABC, empty_slots=True):
     b: Nb
     """Blue value"""
 
-    peaks: Tuple[Nb, Nb]
+    peaks: tuple[Nb, Nb]
     """Max value allowed"""
 
-    def __new__(cls: Type[_RGB_T], _x: ColourSpace[TCV_co] | Tuple[Nb, ...]) -> _RGB_T:
+    def __new__(cls: type[_RGB_T], _x: ColourSpace[TCV_co] | tuple[Nb, ...]) -> _RGB_T:
         return _x.to_rgb(cls) if not isinstance(_x, tuple) else super().__new__(cls)
 
-    def __init__(self, _x: ColourSpace[TCV_co] | Tuple[Nb, ...]) -> None:
+    def __init__(self, _x: ColourSpace[TCV_co] | tuple[Nb, ...]) -> None:
         super().__init__()
         if isinstance(_x, tuple):
             self.r, self.g, self.b = _x
 
-    def to_rgb(self, rgb_type: Type[_RGB_T], /) -> _RGB_T:
+    def to_rgb(self, rgb_type: type[_RGB_T], /) -> _RGB_T:
         if type(self) is rgb_type:
             return self.__copy__()  # type: ignore
 
@@ -307,7 +307,7 @@ class _BaseRGB(ColourSpace[Nb], ABC, empty_slots=True):
 class _RGBNoAlpha(_BaseRGB[Nb], ABC, empty_slots=True):
     """Base class for RGB colourspaces without alpha"""
 
-    def __new__(cls, _x: ColourSpace[ACV] | Tuple[Nb, Nb, Nb]) -> _RGBNoAlpha[Nb]:
+    def __new__(cls, _x: ColourSpace[ACV] | tuple[Nb, Nb, Nb]) -> _RGBNoAlpha[Nb]:
         """
         Make a new RGB colourspace object
 
@@ -315,7 +315,7 @@ class _RGBNoAlpha(_BaseRGB[Nb], ABC, empty_slots=True):
         """
         return super().__new__(cls, _x)  # type: ignore[arg-type]
 
-    def __init__(self, _x: ColourSpace[ACV] | Tuple[Nb, Nb, Nb]) -> None:
+    def __init__(self, _x: ColourSpace[ACV] | tuple[Nb, Nb, Nb]) -> None:
         """
         Make a new RGB colourspace object
 
@@ -330,7 +330,7 @@ class _RGBAlpha(_BaseRGB[Nb], ABC, empty_slots=True):
     a: Nb
     """Alpha value"""
 
-    def __new__(cls, _x: ColourSpace[ACV] | Tuple[Nb, Nb, Nb] | Tuple[Nb, Nb, Nb, Nb]) -> _RGBAlpha[Nb]:
+    def __new__(cls, _x: ColourSpace[ACV] | tuple[Nb, Nb, Nb] | tuple[Nb, Nb, Nb, Nb]) -> _RGBAlpha[Nb]:
         """
         Make a new RGB colourspace object
 
@@ -340,7 +340,7 @@ class _RGBAlpha(_BaseRGB[Nb], ABC, empty_slots=True):
         """
         return super().__new__(cls, _x)  # type: ignore[arg-type]
 
-    def __init__(self, _x: ColourSpace[ACV] | Tuple[Nb, Nb, Nb] | Tuple[Nb, Nb, Nb, Nb]) -> None:
+    def __init__(self, _x: ColourSpace[ACV] | tuple[Nb, Nb, Nb] | tuple[Nb, Nb, Nb, Nb]) -> None:
         """
         Make a new RGB colourspace object
 
@@ -362,54 +362,54 @@ class _RGBAlpha(_BaseRGB[Nb], ABC, empty_slots=True):
 class RGBS(_RGBNoAlpha[float], _ForceFloat):
     """RGB colourspace in range 0.0 - 1.0"""
 
-    peaks: Tuple[float, float] = (0., 1.)
+    peaks: tuple[float, float] = (0., 1.)
 
     @overload
     def __init__(self, _x: ColourSpace[TCV_co], /) -> None:
         ...
 
     @overload
-    def __init__(self, _x: Tuple[float, float, float], /) -> None:
+    def __init__(self, _x: tuple[float, float, float], /) -> None:
         ...
 
-    def __init__(self, _x: ColourSpace[TCV_co] | Tuple[float, float, float]) -> None:
+    def __init__(self, _x: ColourSpace[TCV_co] | tuple[float, float, float]) -> None:
         super().__init__(_x)
 
 
 class RGBAS(_RGBAlpha[float], _ForceFloat):
     """RGB with alpha colourspace in range 0.0 - 1.0"""
 
-    peaks: Tuple[float, float] = (0., 1.)
+    peaks: tuple[float, float] = (0., 1.)
 
     @overload
     def __init__(self, _x: ColourSpace[TCV_co], /) -> None:
         ...
 
     @overload
-    def __init__(self, _x: Tuple[float, float, float], /) -> None:
+    def __init__(self, _x: tuple[float, float, float], /) -> None:
         ...
 
     @overload
-    def __init__(self, _x: Tuple[float, float, float, float], /) -> None:
+    def __init__(self, _x: tuple[float, float, float, float], /) -> None:
         ...
 
-    def __init__(self, _x: ColourSpace[TCV_co] | Tuple[float, float, float] | Tuple[float, float, float, float]) -> None:
+    def __init__(self, _x: ColourSpace[TCV_co] | tuple[float, float, float] | tuple[float, float, float, float]) -> None:
         super().__init__(_x)
 
 
 class RGB(_RGBNoAlpha[int], _ForceInt):
     """RGB colourspace in range 0 - 255"""
-    peaks: Tuple[int, int] = (0, (2 ** 8) - 1)
+    peaks: tuple[int, int] = (0, (2 ** 8) - 1)
 
     @overload
     def __init__(self, _x: ColourSpace[TCV_co], /) -> None:
         ...
 
     @overload
-    def __init__(self, _x: Tuple[int, int, int], /) -> None:
+    def __init__(self, _x: tuple[int, int, int], /) -> None:
         ...
 
-    def __init__(self, _x: ColourSpace[TCV_co] | Tuple[int, int, int]) -> None:
+    def __init__(self, _x: ColourSpace[TCV_co] | tuple[int, int, int]) -> None:
         super().__init__(_x)
 
 
@@ -420,42 +420,42 @@ class RGB24(RGB):
 
 class RGB30(RGB, slots_ex=True):
     """RGB colourspace in range 0 - 1023"""
-    peaks: Tuple[int, int] = (0, (2 ** 10) - 1)
+    peaks: tuple[int, int] = (0, (2 ** 10) - 1)
 
 
 class RGB36(RGB):
     """RGB colourspace in range 0 - 4095"""
-    peaks: Tuple[int, int] = (0, (2 ** 12) - 1)
+    peaks: tuple[int, int] = (0, (2 ** 12) - 1)
 
 
 class RGB42(RGB):
     """RGB colourspace in range 0 - 16383"""
-    peaks: Tuple[int, int] = (0, (2 ** 14) - 1)
+    peaks: tuple[int, int] = (0, (2 ** 14) - 1)
 
 
 class RGB48(RGB):
     """RGB colourspace in range 0 - 65535"""
-    peaks: Tuple[int, int] = (0, (2 ** 16) - 1)
+    peaks: tuple[int, int] = (0, (2 ** 16) - 1)
 
 
 class RGBA(_RGBAlpha[int], _ForceInt):
     """RGB with alpha colourspace in range 0 - 255"""
 
-    peaks: Tuple[int, int] = (0, (2 ** 8) - 1)
+    peaks: tuple[int, int] = (0, (2 ** 8) - 1)
 
     @overload
     def __init__(self, _x: ColourSpace[TCV_co], /) -> None:
         ...
 
     @overload
-    def __init__(self, _x: Tuple[int, int, int], /) -> None:
+    def __init__(self, _x: tuple[int, int, int], /) -> None:
         ...
 
     @overload
     def __init__(self, _x: Tup4[int], /) -> None:
         ...
 
-    def __init__(self, _x: ColourSpace[TCV_co] | Tuple[int, int, int] | Tup4[int]) -> None:
+    def __init__(self, _x: ColourSpace[TCV_co] | tuple[int, int, int] | Tup4[int]) -> None:
         super().__init__(_x)
 
 
@@ -466,22 +466,22 @@ class RGBA32(RGBA):
 
 class RGBA40(RGBA):
     """RGB with alpha colourspace in range 0 - 1023"""
-    peaks: Tuple[int, int] = (0, (2 ** 10) - 1)
+    peaks: tuple[int, int] = (0, (2 ** 10) - 1)
 
 
 class RGBA48(RGBA):
     """RGB with alpha colourspace in range 0 - 4095"""
-    peaks: Tuple[int, int] = (0, (2 ** 12) - 1)
+    peaks: tuple[int, int] = (0, (2 ** 12) - 1)
 
 
 class RGBA56(RGBA):
     """RGB with alpha colourspace in range 0 - 16383"""
-    peaks: Tuple[int, int] = (0, (2 ** 14) - 1)
+    peaks: tuple[int, int] = (0, (2 ** 14) - 1)
 
 
 class RGBA64(RGBA):
     """RGB with alpha colourspace in range 0 - 65535"""
-    peaks: Tuple[int, int] = (0, (2 ** 16) - 1)
+    peaks: tuple[int, int] = (0, (2 ** 16) - 1)
 
 
 class _HueSaturationBased(_ForceFloat, ColourSpace[float], ABC, empty_slots=True):
@@ -493,10 +493,10 @@ class _HueSaturationBased(_ForceFloat, ColourSpace[float], ABC, empty_slots=True
     s: float
     """Saturation"""
 
-    peaks: Tuple[float, float] = (0., 1.)
+    peaks: tuple[float, float] = (0., 1.)
 
     @abstractmethod
-    def __init__(self, _x: ColourSpace[TCV_co] | Tuple[float, float, float]) -> None:
+    def __init__(self, _x: ColourSpace[TCV_co] | tuple[float, float, float]) -> None:
         super().__init__()
 
     def to_xyz(self) -> XYZ:
@@ -524,30 +524,30 @@ class _HueSaturationBased(_ForceFloat, ColourSpace[float], ABC, empty_slots=True
         return self.to_rgb(RGB).to_ass_color()
 
     @classmethod
-    def from_ass_val(cls: Type[_HueSaturationBasedT], _x: Tuple[int, int, int]) -> _HueSaturationBasedT:
+    def from_ass_val(cls: type[_HueSaturationBasedT], _x: tuple[int, int, int]) -> _HueSaturationBasedT:
         """
         Make a Hue Saturation based object from ASS values
 
         :param _x:          Tuple of integer in the range 0 - 255
         :return:            Hue Saturation based object
         """
-        return cls(cast(Tuple[float, float, float], tuple(x / 255 for x in _x)))
+        return cls(cast(tuple[float, float, float], tuple(x / 255 for x in _x)))
 
-    def to_ass_val(self) -> Tuple[float, float, float]:
+    def to_ass_val(self) -> tuple[float, float, float]:
         """
         Make a tuple of float of this current object in range 0 - 255
 
         :return:            Tuple of integer in the range 0 - 255
         """
-        return cast(Tuple[float, float, float], tuple(round(x * 255) for x in self))
+        return cast(tuple[float, float, float], tuple(round(x * 255) for x in self))
 
-    def as_chromatic_circle(self) -> Tuple[float, float, float]:
+    def as_chromatic_circle(self) -> tuple[float, float, float]:
         """
         Change H in a chromatic circle in range 0.0 - 360.0
 
         :return:            Tuple of float with H in range 0.0 - 360.0
         """
-        return cast(Tuple[float, float, float], (self.h * 360, *(*self, )[1:3]))
+        return cast(tuple[float, float, float], (self.h * 360, *(*self, )[1:3]))
 
 
 class HSL(_HueSaturationBased):
@@ -566,7 +566,7 @@ class HSL(_HueSaturationBased):
         ...
 
     @overload
-    def __new__(cls, _x: Tuple[float, float, float]) -> HSL:
+    def __new__(cls, _x: tuple[float, float, float]) -> HSL:
         """
         Make a new HSL colourspace object
 
@@ -574,7 +574,7 @@ class HSL(_HueSaturationBased):
         """
         ...
 
-    def __new__(cls, _x: ColourSpace[TCV_co] | Tuple[float, float, float]) -> HSL:
+    def __new__(cls, _x: ColourSpace[TCV_co] | tuple[float, float, float]) -> HSL:
         return _x.to_hsl() if not isinstance(_x, tuple) else super().__new__(cls)
 
     @overload
@@ -587,7 +587,7 @@ class HSL(_HueSaturationBased):
         ...
 
     @overload
-    def __init__(self, _x: Tuple[float, float, float]) -> None:
+    def __init__(self, _x: tuple[float, float, float]) -> None:
         """
         Make a new HSL colourspace object
 
@@ -595,12 +595,12 @@ class HSL(_HueSaturationBased):
         """
         ...
 
-    def __init__(self, _x: ColourSpace[TCV_co] | Tuple[float, float, float]) -> None:
+    def __init__(self, _x: ColourSpace[TCV_co] | tuple[float, float, float]) -> None:
         super().__init__(_x)
         if isinstance(_x, tuple):
             self.h, self.s, self.l = _x
 
-    def to_rgb(self, rgb_type: Type[_RGB_T], /) -> _RGB_T:
+    def to_rgb(self, rgb_type: type[_RGB_T], /) -> _RGB_T:
         return RGBS(CC.hsl_to_rgb(*self)).to_rgb(rgb_type)
 
     def to_hsl(self) -> HSL:
@@ -626,7 +626,7 @@ class HSV(_HueSaturationBased):
         ...
 
     @overload
-    def __new__(cls, _x: Tuple[float, float, float]) -> HSV:
+    def __new__(cls, _x: tuple[float, float, float]) -> HSV:
         """
         Make a new HSL colourspace object
 
@@ -634,7 +634,7 @@ class HSV(_HueSaturationBased):
         """
         ...
 
-    def __new__(cls, _x: ColourSpace[TCV_co] | Tuple[float, float, float]) -> HSV:
+    def __new__(cls, _x: ColourSpace[TCV_co] | tuple[float, float, float]) -> HSV:
         return _x.to_hsv() if not isinstance(_x, tuple) else super().__new__(cls)
 
     @overload
@@ -647,7 +647,7 @@ class HSV(_HueSaturationBased):
         ...
 
     @overload
-    def __init__(self, _x: Tuple[float, float, float], /) -> None:
+    def __init__(self, _x: tuple[float, float, float], /) -> None:
         """
         Make a new HSL colourspace object
 
@@ -655,12 +655,12 @@ class HSV(_HueSaturationBased):
         """
         ...
 
-    def __init__(self, _x: ColourSpace[TCV_co] | Tuple[float, float, float]) -> None:
+    def __init__(self, _x: ColourSpace[TCV_co] | tuple[float, float, float]) -> None:
         super().__init__(_x)
         if isinstance(_x, tuple):
             self.h, self.s, self.v = _x
 
-    def to_rgb(self, rgb_type: Type[_RGB_T], /) -> _RGB_T:
+    def to_rgb(self, rgb_type: type[_RGB_T], /) -> _RGB_T:
         return RGBS(CC.hsv_to_rgb(*self)).to_rgb(rgb_type)
 
     def to_hsl(self) -> HSL:
@@ -730,7 +730,7 @@ class Opacity(ColourSpace[float]):
         return self.__class__(self.value * (1 - pct) + nobj.value * pct)
 
     @logger.catch
-    def to_rgb(self, rgb_type: Type[_RGB_T], /) -> _RGB_T:
+    def to_rgb(self, rgb_type: type[_RGB_T], /) -> _RGB_T:
         raise NotImplementedError
 
     @logger.catch
@@ -789,7 +789,7 @@ class _HexBased(ColourSpace[str], ABC, empty_slots=True):
     def interpolate(self, nobj: _ColourSpaceT, pct: Pct, /) -> _ColourSpaceT:
         return cast(_ColourSpaceT, self.__class__(self._rgb.interpolate(nobj.to_rgb(RGB), pct)))
 
-    def to_rgb(self, rgb_type: Type[_RGB_T], /) -> _RGB_T:
+    def to_rgb(self, rgb_type: type[_RGB_T], /) -> _RGB_T:
         return self._rgb.to_rgb(rgb_type)
 
     def to_xyz(self) -> XYZ:
@@ -827,7 +827,7 @@ class _HexBased(ColourSpace[str], ABC, empty_slots=True):
         return int(h, 16)
 
 
-def _istup3(tup: Tuple[_T1, _T1, _T1], t: Type[_T2]) -> TypeGuard[Tuple[_T2, _T2, _T2]]:
+def _istup3(tup: tuple[_T1, _T1, _T1], t: type[_T2]) -> TypeGuard[tuple[_T2, _T2, _T2]]:
     return all(isinstance(x, t) for x in tup)
 
 
@@ -847,7 +847,7 @@ class HTML(_HexBased):
         ...
 
     @overload
-    def __new__(cls, _x: Tuple[str, str, str]) -> HTML:
+    def __new__(cls, _x: tuple[str, str, str]) -> HTML:
         """
         Make a HTML colourspace object
 
@@ -856,7 +856,7 @@ class HTML(_HexBased):
         ...
 
     @overload
-    def __new__(cls, _x: Tuple[int, int, int]) -> HTML:
+    def __new__(cls, _x: tuple[int, int, int]) -> HTML:
         """
         Make a HTML colourspace object
 
@@ -873,7 +873,7 @@ class HTML(_HexBased):
         """
         ...
 
-    def __new__(cls, _x: str | Tuple[str, str, str] | Tuple[int, int, int] | ColourSpace[TCV_co]) -> HTML:
+    def __new__(cls, _x: str | tuple[str, str, str] | tuple[int, int, int] | ColourSpace[TCV_co]) -> HTML:
         return _x.to_html() if not isinstance(_x, (str, tuple)) else super().__new__(cls)
 
     @overload
@@ -886,7 +886,7 @@ class HTML(_HexBased):
         ...
 
     @overload
-    def __init__(self, _x: Tuple[str, str, str]) -> None:
+    def __init__(self, _x: tuple[str, str, str]) -> None:
         """
         Make a HTML colourspace object
 
@@ -895,7 +895,7 @@ class HTML(_HexBased):
         ...
 
     @overload
-    def __init__(self, _x: Tuple[int, int, int]) -> None:
+    def __init__(self, _x: tuple[int, int, int]) -> None:
         """
         Make a HTML colourspace object
 
@@ -913,7 +913,7 @@ class HTML(_HexBased):
         ...
 
     @logger.catch
-    def __init__(self, _x: str | Tuple[str, str, str] | Tuple[int, int, int] | ColourSpace[TCV_co]) -> None:
+    def __init__(self, _x: str | tuple[str, str, str] | tuple[int, int, int] | ColourSpace[TCV_co]) -> None:
         super().__init__()
 
         if isinstance(_x, ColourSpace):
@@ -957,18 +957,18 @@ class ASSColor(_HexBased):
         ...
 
     @overload
-    def __new__(cls, _x: Tuple[str, str, str]) -> ASSColor:
+    def __new__(cls, _x: tuple[str, str, str]) -> ASSColor:
         ...
 
     @overload
-    def __new__(cls, _x: Tuple[int, int, int]) -> ASSColor:
+    def __new__(cls, _x: tuple[int, int, int]) -> ASSColor:
         ...
 
     @overload
     def __new__(cls, _x: ColourSpace[TCV_co]) -> ASSColor:
         ...
 
-    def __new__(cls, _x: str | Tuple[str, str, str] | Tuple[int, int, int] | ColourSpace[TCV_co]) -> ASSColor:
+    def __new__(cls, _x: str | tuple[str, str, str] | tuple[int, int, int] | ColourSpace[TCV_co]) -> ASSColor:
         return _x.to_ass_color() if not isinstance(_x, (str, tuple)) else super().__new__(cls)
 
     @overload
@@ -985,7 +985,7 @@ class ASSColor(_HexBased):
         ...
 
     @overload
-    def __init__(self, _x: Tuple[str, str, str]) -> None:
+    def __init__(self, _x: tuple[str, str, str]) -> None:
         """
         Make a AssColor object from a tuple of string of the form ('BB', 'GG', 'RR')
 
@@ -998,7 +998,7 @@ class ASSColor(_HexBased):
         ...
 
     @overload
-    def __init__(self, _x: Tuple[int, int, int]) -> None:
+    def __init__(self, _x: tuple[int, int, int]) -> None:
         """
         Make a AssColor object from a tuple of int of the form (BB, GG, RR)
 
@@ -1021,7 +1021,7 @@ class ASSColor(_HexBased):
         ...
 
     @logger.catch
-    def __init__(self, _x: str | Tuple[str, str, str] | Tuple[int, int, int] | ColourSpace[TCV_co]) -> None:
+    def __init__(self, _x: str | tuple[str, str, str] | tuple[int, int, int] | ColourSpace[TCV_co]) -> None:
         super().__init__()
         if isinstance(_x, ColourSpace):
             return None
@@ -1077,7 +1077,7 @@ class XYZ(XYZBased):
     z: float
     """Quasi-equal to blue value"""
 
-    peaks: Tuple[float, float] = (0., 1.)
+    peaks: tuple[float, float] = (0., 1.)
 
     @overload
     def __new__(cls, _x: ColourSpace[TCV_co], /) -> XYZ:
@@ -1089,7 +1089,7 @@ class XYZ(XYZBased):
         ...
 
     @overload
-    def __new__(cls, _x: Tuple[float, float, float], /) -> XYZ:
+    def __new__(cls, _x: tuple[float, float, float], /) -> XYZ:
         """
         Make a XYZ colourspace object
 
@@ -1097,7 +1097,7 @@ class XYZ(XYZBased):
         """
         ...
 
-    def __new__(cls, _x: ColourSpace[TCV_co] | Tuple[float, float, float]) -> XYZ:
+    def __new__(cls, _x: ColourSpace[TCV_co] | tuple[float, float, float]) -> XYZ:
         return _x.to_xyz() if not isinstance(_x, tuple) else super().__new__(cls)
 
     @overload
@@ -1110,7 +1110,7 @@ class XYZ(XYZBased):
         ...
 
     @overload
-    def __init__(self, _x: Tuple[float, float, float], /) -> None:
+    def __init__(self, _x: tuple[float, float, float], /) -> None:
         """
         Make a XYZ colourspace object
 
@@ -1118,12 +1118,12 @@ class XYZ(XYZBased):
         """
         ...
 
-    def __init__(self, _x: ColourSpace[TCV_co] | Tuple[float, float, float]) -> None:
+    def __init__(self, _x: ColourSpace[TCV_co] | tuple[float, float, float]) -> None:
         super().__init__()
         if isinstance(_x, tuple):
             self.x, self.y, self.z = _x
 
-    def to_rgb(self, rgb_type: Type[_RGB_T], /) -> _RGB_T:
+    def to_rgb(self, rgb_type: type[_RGB_T], /) -> _RGB_T:
         return RGBS(CC.xyz_to_rgb(*self)).to_rgb(rgb_type)
 
     def to_xyz(self) -> XYZ:
@@ -1151,7 +1151,7 @@ class xyY(XYZBased):
     y: float
     Y: float
 
-    peaks: Tuple[float, float] = (0, 1.)
+    peaks: tuple[float, float] = (0, 1.)
 
     @overload
     def __new__(cls, _x: ColourSpace[TCV_co]) -> xyY:
@@ -1163,7 +1163,7 @@ class xyY(XYZBased):
         ...
 
     @overload
-    def __new__(cls, _x: Tuple[float, float, float]) -> xyY:
+    def __new__(cls, _x: tuple[float, float, float]) -> xyY:
         """
         Make a xyY colourspace object
 
@@ -1171,7 +1171,7 @@ class xyY(XYZBased):
         """
         ...
 
-    def __new__(cls, _x: ColourSpace[TCV_co] | Tuple[float, float, float]) -> xyY:
+    def __new__(cls, _x: ColourSpace[TCV_co] | tuple[float, float, float]) -> xyY:
         return _x.to_xyy() if not isinstance(_x, tuple) else super().__new__(cls)
 
     @overload
@@ -1184,7 +1184,7 @@ class xyY(XYZBased):
         ...
 
     @overload
-    def __init__(self, _x: Tuple[float, float, float]) -> None:
+    def __init__(self, _x: tuple[float, float, float]) -> None:
         """
         Make a xyY colourspace object
 
@@ -1192,12 +1192,12 @@ class xyY(XYZBased):
         """
         ...
 
-    def __init__(self, _x: ColourSpace[TCV_co] | Tuple[float, float, float]) -> None:
+    def __init__(self, _x: ColourSpace[TCV_co] | tuple[float, float, float]) -> None:
         super().__init__()
         if isinstance(_x, tuple):
             self.x, self.y, self.z = _x
 
-    def to_rgb(self, rgb_type: Type[_RGB_T], /) -> _RGB_T:
+    def to_rgb(self, rgb_type: type[_RGB_T], /) -> _RGB_T:
         return RGBS(CC.xyy_to_rgb(*self)).to_rgb(rgb_type)
 
     def to_xyz(self) -> XYZ:
@@ -1234,7 +1234,7 @@ class Lab(XYZBased):
     with negative numbers toward blue and positive toward yellow
     """
 
-    peaks: Tuple[float, float] = (-50000., 50000)
+    peaks: tuple[float, float] = (-50000., 50000)
 
     @overload
     def __new__(cls, _x: ColourSpace[TCV_co]) -> Lab:
@@ -1246,7 +1246,7 @@ class Lab(XYZBased):
         ...
 
     @overload
-    def __new__(cls, _x: Tuple[float, float, float]) -> Lab:
+    def __new__(cls, _x: tuple[float, float, float]) -> Lab:
         """
         Make a Lab colourspace object
 
@@ -1254,7 +1254,7 @@ class Lab(XYZBased):
         """
         ...
 
-    def __new__(cls, _x: ColourSpace[TCV_co] | Tuple[float, float, float]) -> Lab:
+    def __new__(cls, _x: ColourSpace[TCV_co] | tuple[float, float, float]) -> Lab:
         return _x.to_lab() if not isinstance(_x, tuple) else super().__new__(cls)
 
     @overload
@@ -1267,7 +1267,7 @@ class Lab(XYZBased):
         ...
 
     @overload
-    def __init__(self, _x: Tuple[float, float, float]) -> None:
+    def __init__(self, _x: tuple[float, float, float]) -> None:
         """
         Make a Lab colourspace object
 
@@ -1275,12 +1275,12 @@ class Lab(XYZBased):
         """
         ...
 
-    def __init__(self, _x: ColourSpace[TCV_co] | Tuple[float, float, float]) -> None:
+    def __init__(self, _x: ColourSpace[TCV_co] | tuple[float, float, float]) -> None:
         super().__init__()
         if isinstance(_x, tuple):
             self.L, self.a, self.b = _x
 
-    def to_rgb(self, rgb_type: Type[_RGB_T], /) -> _RGB_T:
+    def to_rgb(self, rgb_type: type[_RGB_T], /) -> _RGB_T:
         return RGBS(CC.lab_to_rgb(*self)).to_rgb(rgb_type)
 
     def to_xyz(self) -> XYZ:
@@ -1317,7 +1317,7 @@ class LCHab(XYZBased):
     H: float
     """Hue angle, angle of the hue in the CIELAB color wheel"""
 
-    peaks: Tuple[float, float] = (-50000., 50000)
+    peaks: tuple[float, float] = (-50000., 50000)
 
     @overload
     def __new__(cls, _x: ColourSpace[TCV_co]) -> LCHab:
@@ -1329,7 +1329,7 @@ class LCHab(XYZBased):
         ...
 
     @overload
-    def __new__(cls, _x: Tuple[float, float, float]) -> LCHab:
+    def __new__(cls, _x: tuple[float, float, float]) -> LCHab:
         """
         Make a LCHab colourspace object
 
@@ -1337,7 +1337,7 @@ class LCHab(XYZBased):
         """
         ...
 
-    def __new__(cls, _x: ColourSpace[TCV_co] | Tuple[float, float, float]) -> LCHab:
+    def __new__(cls, _x: ColourSpace[TCV_co] | tuple[float, float, float]) -> LCHab:
         return _x.to_lch_ab() if not isinstance(_x, tuple) else super().__new__(cls)
 
     @overload
@@ -1350,7 +1350,7 @@ class LCHab(XYZBased):
         ...
 
     @overload
-    def __init__(self, _x: Tuple[float, float, float]) -> None:
+    def __init__(self, _x: tuple[float, float, float]) -> None:
         """
         Make a LCHab colourspace object
 
@@ -1358,12 +1358,12 @@ class LCHab(XYZBased):
         """
         ...
 
-    def __init__(self, _x: ColourSpace[TCV_co] | Tuple[float, float, float]) -> None:
+    def __init__(self, _x: ColourSpace[TCV_co] | tuple[float, float, float]) -> None:
         super().__init__()
         if isinstance(_x, tuple):
             self.L, self.C, self.H = _x
 
-    def to_rgb(self, rgb_type: Type[_RGB_T], /) -> _RGB_T:
+    def to_rgb(self, rgb_type: type[_RGB_T], /) -> _RGB_T:
         return RGBS(CC.lch_ab_to_rgb(*self)).to_rgb(rgb_type)
 
     def to_xyz(self) -> XYZ:
@@ -1393,7 +1393,7 @@ class Luv(XYZBased):
     u: float
     v: float
 
-    peaks: Tuple[float, float] = (-50000., 50000)
+    peaks: tuple[float, float] = (-50000., 50000)
 
     @overload
     def __new__(cls, _x: ColourSpace[TCV_co]) -> Luv:
@@ -1405,7 +1405,7 @@ class Luv(XYZBased):
         ...
 
     @overload
-    def __new__(cls, _x: Tuple[float, float, float]) -> Luv:
+    def __new__(cls, _x: tuple[float, float, float]) -> Luv:
         """
         Make a Luv colourspace object
 
@@ -1413,7 +1413,7 @@ class Luv(XYZBased):
         """
         ...
 
-    def __new__(cls, _x: ColourSpace[TCV_co] | Tuple[float, float, float]) -> Luv:
+    def __new__(cls, _x: ColourSpace[TCV_co] | tuple[float, float, float]) -> Luv:
         return _x.to_luv() if not isinstance(_x, tuple) else super().__new__(cls)
 
     @overload
@@ -1426,7 +1426,7 @@ class Luv(XYZBased):
         ...
 
     @overload
-    def __init__(self, _x: Tuple[float, float, float]) -> None:
+    def __init__(self, _x: tuple[float, float, float]) -> None:
         """
         Make a Luv colourspace object
 
@@ -1434,12 +1434,12 @@ class Luv(XYZBased):
         """
         ...
 
-    def __init__(self, _x: ColourSpace[TCV_co] | Tuple[float, float, float]) -> None:
+    def __init__(self, _x: ColourSpace[TCV_co] | tuple[float, float, float]) -> None:
         super().__init__()
         if isinstance(_x, tuple):
             self.L, self.u, self.v = _x
 
-    def to_rgb(self, rgb_type: Type[_RGB_T], /) -> _RGB_T:
+    def to_rgb(self, rgb_type: type[_RGB_T], /) -> _RGB_T:
         return RGBS(CC.luv_to_rgb(*self)).to_rgb(rgb_type)
 
     def to_xyz(self) -> XYZ:
@@ -1476,7 +1476,7 @@ class LCHuv(XYZBased):
     H: float
     """Hue angle, angle of the hue in the CIELAB color wheel"""
 
-    peaks: Tuple[float, float] = (-50000., 50000)
+    peaks: tuple[float, float] = (-50000., 50000)
 
     @overload
     def __new__(cls, _x: ColourSpace[TCV_co]) -> LCHuv:
@@ -1488,7 +1488,7 @@ class LCHuv(XYZBased):
         ...
 
     @overload
-    def __new__(cls, _x: Tuple[float, float, float]) -> LCHuv:
+    def __new__(cls, _x: tuple[float, float, float]) -> LCHuv:
         """
         Make a LCHuv colourspace object
 
@@ -1496,7 +1496,7 @@ class LCHuv(XYZBased):
         """
         ...
 
-    def __new__(cls, _x: ColourSpace[TCV_co] | Tuple[float, float, float]) -> LCHuv:
+    def __new__(cls, _x: ColourSpace[TCV_co] | tuple[float, float, float]) -> LCHuv:
         return _x.to_lch_uv() if not isinstance(_x, tuple) else super().__new__(cls)
 
     @overload
@@ -1509,7 +1509,7 @@ class LCHuv(XYZBased):
         ...
 
     @overload
-    def __init__(self, _x: Tuple[float, float, float]) -> None:
+    def __init__(self, _x: tuple[float, float, float]) -> None:
         """
         Make a LCHuv colourspace object
 
@@ -1517,12 +1517,12 @@ class LCHuv(XYZBased):
         """
         ...
 
-    def __init__(self, _x: ColourSpace[TCV_co] | Tuple[float, float, float]) -> None:
+    def __init__(self, _x: ColourSpace[TCV_co] | tuple[float, float, float]) -> None:
         super().__init__()
         if isinstance(_x, tuple):
             self.L, self.C, self.H = _x
 
-    def to_rgb(self, rgb_type: Type[_RGB_T], /) -> _RGB_T:
+    def to_rgb(self, rgb_type: type[_RGB_T], /) -> _RGB_T:
         return RGBS(CC.lch_uv_to_rgb(*self)).to_rgb(rgb_type)
 
     def to_xyz(self) -> XYZ:

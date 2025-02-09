@@ -19,7 +19,7 @@ from __future__ import annotations
 __all__ = ['FrameUtility', 'ColorUtility', 'interpolate']
 
 import re
-from typing import TYPE_CHECKING, Any, Dict, Final, Iterable, Iterator, List, NamedTuple, Optional, cast, overload
+from typing import TYPE_CHECKING, Any, Final, Iterable, Iterator, NamedTuple, cast, overload
 
 from typing_extensions import TypeGuard
 
@@ -43,12 +43,12 @@ def interpolate(val1: _ColourSpaceT, val2: _ColourSpaceT, pct: float = 0.5, acc:
 
 
 @overload
-def interpolate(val1: List[Point], val2: None = ..., pct: float = 0.5, acc: float = 1.0) -> PointCartesian3D:
+def interpolate(val1: list[Point], val2: None = ..., pct: float = 0.5, acc: float = 1.0) -> PointCartesian3D:
     ...
 
 
 @logger.catch
-def interpolate(val1: object, val2: Optional[object] = None, pct: float = 0.5, acc: float = 1.0) -> Any:
+def interpolate(val1: object, val2: Any | None = None, pct: float = 0.5, acc: float = 1.0) -> Any:
     """
     Interpolate val1 and val2 (ColourSpace objects or numbers) by percent value
 
@@ -65,14 +65,14 @@ def interpolate(val1: object, val2: Optional[object] = None, pct: float = 0.5, a
     if isinstance(val1, ColourSpace) and isinstance(val2, ColourSpace):
         return val1.interpolate(val2, pct)
 
-    val1 = cast(List[object], val1)
+    val1 = cast(list[Any], val1)
     if _is_point_seq(val1):
         return Geometry.point_on_bézier_curve(val1, pct)
 
     raise ValueError(f'interpolate: couldn\'t interpolate val1 "{val1}" and val2 "{val2}"')
 
 
-def _is_point_seq(val: List[object]) -> TypeGuard[List[Point]]:
+def _is_point_seq(val: list[Any]) -> TypeGuard[list[Point]]:
     return all(isinstance(p, Point) for p in val)
 
 
@@ -251,13 +251,13 @@ class ColorUtility:
             CU = ColorUtility([ line[0] ])
     """
 
-    color_changes: List[Dict[str, Any]]
+    color_changes: list[dict[str, Any]]
     c1_req: bool
     c3_req: bool
     c4_req: bool
 
     @logger.catch
-    def __init__(self, lines: List[Line], offset: int = 0) -> None:
+    def __init__(self, lines: list[Line], offset: int = 0) -> None:
         self.color_changes = []
         self.c1_req = False
         self.c3_req = False
@@ -360,7 +360,7 @@ class ColorUtility:
                     )
 
     @logger.catch
-    def get_color_change(self, line: Line, c1: Optional[bool] = None, c3: Optional[bool] = None, c4: Optional[bool] = None) -> str:
+    def get_color_change(self, line: Line, c1: bool | None = None, c3: bool | None = None, c4: bool | None = None) -> str:
         """Returns all the color_changes in the object that fit (in terms of time) between line.start_time and line.end_time.
 
         Parameters:
@@ -449,7 +449,7 @@ class ColorUtility:
         return transform
 
     @logger.catch
-    def get_fr_color_change(self, line: Line, c1: Optional[bool] = None, c3: Optional[bool] = None, c4: Optional[bool] = None) -> str:
+    def get_fr_color_change(self, line: Line, c1: bool | None = None, c3: bool | None = None, c4: bool | None = None) -> str:
         """Returns the single color(s) in the color_changes that fit the current frame (line.start_time) in your frame loop.
 
         Note:

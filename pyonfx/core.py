@@ -36,10 +36,7 @@ from collections import UserList, defaultdict
 from fractions import Fraction
 from functools import lru_cache
 from itertools import count
-from typing import (
-    Any, DefaultDict, Dict, Iterable, Iterator, List, Literal, Mapping, Optional, Tuple, Type,
-    TypeVar, Union, overload
-)
+from typing import Any, Iterable, Iterator, Literal, Mapping, TypeVar, Union, overload
 
 from more_itertools import zip_offset
 from typing_extensions import Self
@@ -65,12 +62,12 @@ class Ass(AutoSlots):
 
     meta: Meta
     """Meta of the .ass file"""
-    styles: List[Style]
+    styles: list[Style]
     """List of styles included in the .ass file"""
     _lines: PList[Line]
-    _output: Optional[AnyPath]
-    _output_lines: List[str]
-    _sections: Dict[str, _Section]
+    _output: AnyPath | None
+    _output_lines: list[str]
+    _sections: dict[str, _Section]
     _ptime: float
     _fix_timestamps: bool
 
@@ -182,7 +179,7 @@ class Ass(AutoSlots):
             return None
 
         # Keep styles and lines linked to them for compute the leadin and leadout
-        lines_by_styles: DefaultDict[str, List[Line]] = defaultdict(list)
+        lines_by_styles: defaultdict[str, list[Line]] = defaultdict(list)
         for line in self._lines:
             try:
                 line_style = line.style
@@ -218,7 +215,7 @@ class Ass(AutoSlots):
         logger.debug('Clear cache done!')
 
     @property
-    def data(self) -> Tuple[Meta, List[Style], PList[Line]]:
+    def data(self) -> tuple[Meta, list[Style], PList[Line]]:
         """
         :return:            Return data of the .ass file
         """
@@ -240,7 +237,7 @@ class Ass(AutoSlots):
             for sname in OrderedSet(line.style.name for line in self.lines) & OrderedSet(s.name for s in self.styles)
         ]
 
-    def add_line(self, line: Line, fix_timestamps: Optional[bool] = None) -> None:
+    def add_line(self, line: Line, fix_timestamps: bool | None = None) -> None:
         """
         Format a Line to a string suitable for writing into ASS file
         and add it to an internal list
@@ -258,7 +255,7 @@ class Ass(AutoSlots):
     @logger.catch
     def save(
         self,
-        lines: Optional[Iterable[Line]] = None,
+        lines: Iterable[Line] | None = None,
         comment_original: bool = True, fix_timestamps: bool | None = None,
         keep_extradata: bool = True
     ) -> None:
@@ -348,7 +345,7 @@ class Ass(AutoSlots):
             subprocess.call(['aegisub', self._output])
 
     @logger.catch
-    def open_mpv(self, video_path: AnyPath | None = None, video_start: Optional[str] = None, full_screen: bool = False) -> None:
+    def open_mpv(self, video_path: AnyPath | None = None, video_start: str | None = None, full_screen: bool = False) -> None:
         """
         Open the output specified in the constructor with MPV.
         Please add MPV in your PATH (https://pyonfx.readthedocs.io/en/latest/quick%20start.html#installation-extra-step)
@@ -429,7 +426,7 @@ class AssVoid(Ass):
         self._lines = PList()
 
 
-class _DataCore(AutoSlots, Iterable[Tuple[str, Any]], ABC, empty_slots=True):
+class _DataCore(AutoSlots, Iterable[tuple[str, Any]], ABC, empty_slots=True):
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, _DataCore):
             return super().__eq__(value)
@@ -438,7 +435,7 @@ class _DataCore(AutoSlots, Iterable[Tuple[str, Any]], ABC, empty_slots=True):
     def __hash__(self) -> int:
         return super().__hash__()
 
-    def __iter__(self) -> Iterator[Tuple[str, Any]]:
+    def __iter__(self) -> Iterator[tuple[str, Any]]:
         for name in self.__all_slots__:
             try:
                 yield name, getattr(self, name)
@@ -454,11 +451,11 @@ class _DataCore(AutoSlots, Iterable[Tuple[str, Any]], ABC, empty_slots=True):
     def __repr__(self) -> str:
         return super().__repr__()
 
-    def _asdict(self) -> Dict[str, Any]:
+    def _asdict(self) -> dict[str, Any]:
         return {k: v._asdict() if isinstance(v, _DataCore) else v for k, v in self}
 
     @lru_cache(maxsize=None)
-    def _pretty_print(self, obj: _DataCore, indent: int = 0, name: Optional[str] = None) -> str:
+    def _pretty_print(self, obj: _DataCore, indent: int = 0, name: str | None = None) -> str:
         if not name:
             out = " " * indent + f'{obj.__class__.__name__}:\n'
         else:
@@ -504,7 +501,7 @@ class Meta(_DataCore):
 
 class _MetaData(_DataCore, empty_slots=True):
     @classmethod
-    def from_text(cls: Type[_MetaDataT], text: str) -> _MetaDataT:
+    def from_text(cls: type[_MetaDataT], text: str) -> _MetaDataT:
         """
         Make a Meta object from a chunk of text [Script Info] or [Aegisub Project Garbage]
 
@@ -1063,7 +1060,7 @@ class _AssText(_PositionedText, ABC, empty_slots=True):
 
         return shape
 
-    def to_clip(self, an: Alignment = 7, fscx: Optional[float] = None, fscy: Optional[float] = None, copy: bool = True) -> Shape:
+    def to_clip(self, an: Alignment = 7, fscx: float | None = None, fscy: float | None = None, copy: bool = True) -> Shape:
         """
         Convert current AssText object to shape based on its Style attribute, suitable for \\clip tag
 
@@ -1097,7 +1094,7 @@ class _AssText(_PositionedText, ABC, empty_slots=True):
 
         return shape
 
-    def to_pixels(self, supersampling: int = 4, anti_aliasing: bool = True) -> List[Pixel]:
+    def to_pixels(self, supersampling: int = 4, anti_aliasing: bool = True) -> list[Pixel]:
         """
         Converts text with given style information to a list of Pixel.
         It is strongly recommended to create a dedicated style for pixels,
